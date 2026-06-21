@@ -1,16 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Edit3, Eye, Trash2, CalendarIcon, MapPin, Users, DollarSign } from 'lucide-react';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
-import SearchInput from '../../components/ui/SearchInput';
-import Tabs from '../../components/ui/Tabs';
-import PageHeader from '../../components/ui/PageHeader';
-import EmptyState from '../../components/ui/EmptyState';
+import { useNavigate } from 'react-router-dom';
+import { Title, Text, Group, SimpleGrid, Card, Badge, Button, TextInput, Tabs, Stack } from '@mantine/core';
+import { IconSearch, IconEye, IconEdit, IconTrash, IconPlus, IconCalendarEvent, IconUsers, IconCurrencyDollar } from '@tabler/icons-react';
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 
-const sampleEvents = [
+const events = [
   { id: 1, title: 'Summer Music Festival', date: '2026-07-15', status: 'published', ticketsSold: 120, revenue: 7200, venue: 'Central Park', category: 'Music' },
   { id: 2, title: 'Tech Conference 2026', date: '2026-08-20', status: 'published', ticketsSold: 85, revenue: 12750, venue: 'Convention Center', category: 'Technology' },
   { id: 3, title: 'Art Workshop Series', date: '2026-09-05', status: 'draft', ticketsSold: 0, revenue: 0, venue: 'Art Gallery', category: 'Art' },
@@ -18,108 +13,83 @@ const sampleEvents = [
   { id: 5, title: 'Business Networking', date: '2026-06-30', status: 'published', ticketsSold: 45, revenue: 2250, venue: 'Business Hub', category: 'Business' },
 ];
 
-function statusVariant(status) {
-  if (status === 'published') return 'success';
-  if (status === 'draft') return 'warning';
-  if (status === 'cancelled') return 'danger';
-  return 'secondary';
-}
-
 export default function MyEvents() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('active');
 
-  const filtered = sampleEvents.filter((e) => {
-    const matchSearch = e.title.toLowerCase().includes(search.toLowerCase()) || e.venue.toLowerCase().includes(search.toLowerCase());
-    if (activeTab === 'active') return matchSearch && e.status === 'published';
-    return matchSearch && e.status === 'draft';
+  const filtered = events.filter((e) => {
+    const q = search.toLowerCase();
+    const match = e.title.toLowerCase().includes(q) || e.venue.toLowerCase().includes(q);
+    if (activeTab === 'active') return match && e.status === 'published';
+    return match && e.status === 'draft';
   });
 
-  const tabs = [
-    { value: 'active', label: `Active (${sampleEvents.filter((e) => e.status === 'published').length})` },
-    { value: 'draft', label: `Draft (${sampleEvents.filter((e) => e.status === 'draft').length})` },
-  ];
-
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
-      <PageHeader
-        title="My Events"
-        description="Manage your created events"
-        action={
-          <Link to="/organizer/events/create">
-            <Button size="lg">Create New Event</Button>
-          </Link>
-        }
-      />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <Group justify="space-between" mb="lg">
+        <Title order={2}>My Events</Title>
+        <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/organizer/events/create')}>Create New Event</Button>
+      </Group>
 
-      <Card padding="none">
-        <div className="p-6 pb-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} tabs={tabs} />
-          <div className="mt-4">
-            <SearchInput value={search} onChange={setSearch} placeholder="Search events by name or venue..." />
-          </div>
-        </div>
+      <Tabs value={activeTab} onChange={setActiveTab}>
+        <Group justify="space-between" mb="md">
+          <Tabs.List>
+            <Tabs.Tab value="active">Active ({events.filter((e) => e.status === 'published').length})</Tabs.Tab>
+            <Tabs.Tab value="draft">Draft ({events.filter((e) => e.status === 'draft').length})</Tabs.Tab>
+          </Tabs.List>
+          <TextInput
+            placeholder="Search events by name or venue..."
+            leftSection={<IconSearch size={16} />}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ maxWidth: 320 }}
+          />
+        </Group>
 
-        <div className="p-6">
-          {filtered.length === 0 ? (
-            <EmptyState
-              title="No events found"
-              description={search ? 'Try a different search term' : 'No events in this category yet'}
-              action={activeTab === 'draft' ? { label: 'Create Event', onClick: () => {} } : undefined}
-            />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filtered.map((event) => (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card hover className="p-5 h-full flex flex-col">
-                    <div className="flex items-start justify-between mb-3">
-                      <Badge variant={statusVariant(event.status)} size="sm">{event.status}</Badge>
-                      <div className="flex gap-1">
-                        <Link to={`/organizer/events/${event.id}`}>
-                          <Button variant="ghost" size="xs" icon={<Eye className="h-3.5 w-3.5" />} />
-                        </Link>
-                        <Link to={`/organizer/events/${event.id}/edit`}>
-                          <Button variant="ghost" size="xs" icon={<Edit3 className="h-3.5 w-3.5" />} />
-                        </Link>
-                        <Button variant="ghost" size="xs" icon={<Trash2 className="h-3.5 w-3.5 text-danger-500" />} />
-                      </div>
-                    </div>
+        {filtered.length === 0 ? (
+          <Stack align="center" py="xl">
+            <Text c="dimmed" size="lg">No events found</Text>
+            <Text c="dimmed" size="sm">{search ? 'Try a different search term' : 'No events in this category yet'}</Text>
+          </Stack>
+        ) : (
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+            {filtered.map((event) => (
+              <motion.div key={event.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
+                <Card padding="lg" radius="md" withBorder h="100%">
+                  <Group justify="space-between" mb="sm">
+                    <Badge color={getStatusColor(event.status)} variant="light" size="sm">{getStatusLabel(event.status)}</Badge>
+                    <Group gap={4}>
+                      <Button variant="subtle" size="compact-sm" onClick={() => navigate(`/organizer/events/${event.id}`)}><IconEye size={14} /></Button>
+                      <Button variant="subtle" size="compact-sm" onClick={() => navigate(`/organizer/events/${event.id}/edit`)}><IconEdit size={14} /></Button>
+                      <Button variant="subtle" size="compact-sm" color="red"><IconTrash size={14} /></Button>
+                    </Group>
+                  </Group>
 
-                    <h3 className="font-semibold text-secondary-900 dark:text-secondary-100 mb-2 line-clamp-2">{event.title}</h3>
+                  <Text fw={600} size="md" mb="xs" lineClamp={2}>{event.title}</Text>
 
-                    <div className="space-y-1.5 mb-4 text-xs text-secondary-500 dark:text-secondary-400">
-                      <div className="flex items-center gap-1.5">
-                        <CalendarIcon className="h-3.5 w-3.5" />
-                        {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {event.venue}
-                      </div>
-                    </div>
+                  <Group gap="xs" mb={4}>
+                    <IconCalendarEvent size={14} />
+                    <Text size="sm" c="dimmed">{formatDate(event.date)}</Text>
+                  </Group>
+                  <Text size="sm" c="dimmed" mb="md">{event.venue}</Text>
 
-                    <div className="mt-auto pt-3 border-t border-secondary-100 dark:border-secondary-700 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-sm text-secondary-600 dark:text-secondary-400">
-                        <Users className="h-3.5 w-3.5" />
-                        {event.ticketsSold} sold
-                      </div>
-                      <div className="flex items-center gap-1.5 text-sm font-semibold text-secondary-900 dark:text-secondary-100">
-                        <DollarSign className="h-3.5 w-3.5" />
-                        ${event.revenue.toLocaleString()}
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Card>
+                  <Group justify="space-between" pt="sm" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
+                    <Group gap={4}>
+                      <IconUsers size={16} />
+                      <Text size="sm">{event.ticketsSold} sold</Text>
+                    </Group>
+                    <Group gap={4}>
+                      <IconCurrencyDollar size={16} />
+                      <Text size="sm" fw={600}>{formatCurrency(event.revenue)}</Text>
+                    </Group>
+                  </Group>
+                </Card>
+              </motion.div>
+            ))}
+          </SimpleGrid>
+        )}
+      </Tabs>
     </motion.div>
   );
 }

@@ -1,147 +1,124 @@
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useDispatch } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { toast } from 'sonner'
-import { register } from '../features/auth/authSlice'
-import AuthLayout from '../layouts/AuthLayout'
-import { Input, Button, Select } from '../components/ui'
+import { TextInput, PasswordInput, Button, Select, Text, Anchor } from '@mantine/core';
+import { IconMail, IconLock, IconUser } from '@tabler/icons-react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { register as registerUser } from '../features/auth/authSlice';
+import AuthLayout from '../layouts/AuthLayout';
+import { notifications } from '@mantine/notifications';
 
-const registerSchema = z
+const schema = z
   .object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Invalid email'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-    role: z.enum(['attendee', 'organizer'], { required_error: 'Select a role' }),
+    confirmPassword: z.string(),
+    role: z.enum(['attendee', 'organizer']),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
-  })
+  });
 
-const roleOptions = [
-  { value: 'attendee', label: 'Attendee' },
-  { value: 'organizer', label: 'Organizer' },
-]
+const fadeUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+};
 
 export default function Register() {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '', role: 'attendee' },
-  })
+  } = useForm({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data) => {
     try {
-      await dispatch(
-        register({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          role: data.role,
-        }),
-      ).unwrap()
-      toast.success('Account created successfully!')
-      navigate('/')
+      await dispatch(registerUser(data)).unwrap();
+      notifications.show({ title: 'Success', message: 'Account created successfully', color: 'green' });
+      navigate('/');
     } catch (err) {
-      toast.error(err?.message || 'Registration failed')
+      notifications.show({ title: 'Error', message: err?.message || 'Registration failed', color: 'red' });
     }
-  }
-
-  const fadeUp = (delay = 0) => ({
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5, delay },
-  })
+  };
 
   return (
     <AuthLayout>
-      <motion.div {...fadeUp(0)} className="space-y-2">
-        <h1 className="text-3xl font-bold text-primary-900 dark:text-primary-100">
-          Create an account
-        </h1>
-        <p className="text-primary-500 dark:text-primary-400">
-          Join the event platform today
-        </p>
-      </motion.div>
+      <motion.form onSubmit={handleSubmit(onSubmit)} {...fadeUp} transition={{ duration: 0.5 }}>
+        <Text ta="center" size="xl" fw={700} mb="md">Create Account</Text>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
-        <motion.div {...fadeUp(0.1)} className="space-y-5">
-          <Input
-            label="Full name"
-            placeholder="John Doe"
-            error={errors.name?.message}
-            {...register('name')}
-          />
+        <TextInput
+          label="Name"
+          placeholder="Your name"
+          leftSection={<IconUser size={16} />}
+          error={errors.name?.message}
+          {...register('name')}
+        />
 
-          <Input
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            error={errors.email?.message}
-            {...register('email')}
-          />
+        <TextInput
+          label="Email"
+          placeholder="your@email.com"
+          leftSection={<IconMail size={16} />}
+          mt="md"
+          error={errors.email?.message}
+          {...register('email')}
+        />
 
-          <Input
-            label="Password"
-            type="password"
-            placeholder="••••••••"
-            error={errors.password?.message}
-            {...register('password')}
-          />
+        <PasswordInput
+          label="Password"
+          placeholder="Your password"
+          leftSection={<IconLock size={16} />}
+          mt="md"
+          error={errors.password?.message}
+          {...register('password')}
+        />
 
-          <Input
-            label="Confirm password"
-            type="password"
-            placeholder="••••••••"
-            error={errors.confirmPassword?.message}
-            {...register('confirmPassword')}
-          />
+        <PasswordInput
+          label="Confirm Password"
+          placeholder="Confirm your password"
+          leftSection={<IconLock size={16} />}
+          mt="md"
+          error={errors.confirmPassword?.message}
+          {...register('confirmPassword')}
+        />
 
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <Select
-                label="I want to join as"
-                options={roleOptions}
-                value={field.value}
-                onValueChange={field.onChange}
-                error={errors.role?.message}
-              />
-            )}
-          />
-        </motion.div>
+        <Controller
+          name="role"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Role"
+              placeholder="Select role"
+              data={[
+                { value: 'attendee', label: 'Attendee' },
+                { value: 'organizer', label: 'Organizer' },
+              ]}
+              mt="md"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.role?.message}
+            />
+          )}
+        />
 
-        <motion.div {...fadeUp(0.2)}>
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'Creating account...' : 'Create account'}
-          </Button>
-        </motion.div>
-      </form>
+        <Button fullWidth type="submit" mt="xl" loading={isSubmitting}>
+          Register
+        </Button>
 
-      <motion.p
-        {...fadeUp(0.3)}
-        className="mt-8 text-center text-sm text-primary-500 dark:text-primary-400"
-      >
-        Already have an account?{' '}
-        <Link
-          to="/login"
-          className="font-semibold text-primary-600 hover:text-primary-500 dark:text-primary-400"
-        >
-          Sign in
-        </Link>
-      </motion.p>
+        <Text ta="center" size="sm" mt="md">
+          Already have an account?{' '}
+          <Anchor component={Link} to="/login">
+            Sign in
+          </Anchor>
+        </Text>
+      </motion.form>
     </AuthLayout>
-  )
+  );
 }

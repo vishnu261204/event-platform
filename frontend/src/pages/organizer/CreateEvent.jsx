@@ -1,29 +1,27 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Textarea from '../../components/ui/Textarea';
-import Select from '../../components/ui/Select';
-import FileUploader from '../../components/ui/FileUploader';
-import PageHeader from '../../components/ui/PageHeader';
+import { Paper, Title, Text, TextInput, Textarea, Select, NumberInput, Button, Group, SimpleGrid } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { Dropzone } from '@mantine/dropzone';
+import { IconCurrencyDollar, IconUsers, IconPlus, IconPhoto } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   category: z.string().min(1, 'Category is required'),
-  date: z.string().min(1, 'Date is required'),
+  date: z.date({ required_error: 'Date is required' }),
   time: z.string().min(1, 'Time is required'),
   location: z.string().min(1, 'Location is required'),
-  price: z.string().min(1, 'Price is required'),
-  totalTickets: z.string().min(1, 'Total tickets is required'),
+  price: z.number({ required_error: 'Price is required' }).min(0, 'Price cannot be negative'),
+  totalTickets: z.number({ required_error: 'Total tickets is required' }).min(1, 'At least 1 ticket'),
 });
 
-const categoryOptions = [
+const categories = [
   { value: 'Technology', label: 'Technology' },
   { value: 'Workshop', label: 'Workshop' },
   { value: 'Music', label: 'Music' },
@@ -36,30 +34,27 @@ const categoryOptions = [
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const [image, setImage] = useState(null);
-
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {
-      title: '', description: '', category: '', date: '', time: '', location: '', price: '', totalTickets: '',
-    },
+    defaultValues: { title: '', description: '', category: '', date: null, time: '', location: '', price: 0, totalTickets: 1 },
   });
 
-  const onSubmit = (data) => {
-    console.log('Event created:', { ...data, image });
+  const onSubmit = () => {
+    notifications.show({ title: 'Success', message: 'Event created successfully!', color: 'green' });
+    navigate('/organizer/events');
   };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <PageHeader title="Create New Event" description="Fill in the details to create your event" />
+      <Title order={2} mb="lg">Create New Event</Title>
 
-      <Card className="max-w-3xl mx-auto mt-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <Input label="Event Title" placeholder="Enter event title" error={errors.title?.message} {...register('title')} />
+      <Paper withBorder shadow="sm" p="xl" radius="md" maw={720} mx="auto">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <TextInput label="Event Title" placeholder="Enter event title" error={errors.title?.message} {...register('title')} mb="md" />
 
-          <Textarea label="Description" placeholder="Describe your event..." error={errors.description?.message} {...register('description')} />
+          <Textarea label="Description" placeholder="Describe your event..." error={errors.description?.message} {...register('description')} mb="md" rows={4} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <SimpleGrid cols={{ base: 1, sm: 2 }} mb="md">
             <Controller
               name="category"
               control={control}
@@ -67,37 +62,83 @@ export default function CreateEvent() {
                 <Select
                   label="Category"
                   placeholder="Select category"
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  options={categoryOptions}
+                  data={categories}
                   error={errors.category?.message}
+                  value={field.value}
+                  onChange={field.onChange}
                 />
               )}
             />
-            <Input label="Location" placeholder="Event location" error={errors.location?.message} {...register('location')} />
-          </div>
+            <TextInput label="Location" placeholder="Event location" error={errors.location?.message} {...register('location')} />
+          </SimpleGrid>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Date" type="date" error={errors.date?.message} {...register('date')} />
-            <Input label="Time" type="time" error={errors.time?.message} {...register('time')} />
-          </div>
+          <SimpleGrid cols={{ base: 1, sm: 2 }} mb="md">
+            <Controller
+              name="date"
+              control={control}
+              render={({ field }) => (
+                <DateInput
+                  label="Date"
+                  placeholder="Select date"
+                  error={errors.date?.message}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+            <TextInput label="Time" placeholder="e.g. 14:00" error={errors.time?.message} {...register('time')} />
+          </SimpleGrid>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Ticket Price ($)" type="number" placeholder="0 for free" error={errors.price?.message} {...register('price')} />
-            <Input label="Total Tickets" type="number" placeholder="Number of tickets" error={errors.totalTickets?.message} {...register('totalTickets')} />
-          </div>
+          <SimpleGrid cols={{ base: 1, sm: 2 }} mb="md">
+            <Controller
+              name="price"
+              control={control}
+              render={({ field }) => (
+                <NumberInput
+                  label="Ticket Price"
+                  placeholder="0 for free"
+                  leftSection={<IconCurrencyDollar size={16} />}
+                  error={errors.price?.message}
+                  value={field.value}
+                  onChange={field.onChange}
+                  min={0}
+                />
+              )}
+            />
+            <Controller
+              name="totalTickets"
+              control={control}
+              render={({ field }) => (
+                <NumberInput
+                  label="Total Tickets"
+                  placeholder="Number of tickets"
+                  leftSection={<IconUsers size={16} />}
+                  error={errors.totalTickets?.message}
+                  value={field.value}
+                  onChange={field.onChange}
+                  min={1}
+                />
+              )}
+            />
+          </SimpleGrid>
 
-          <div>
-            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1.5">Event Image</label>
-            <FileUploader onUpload={(files) => setImage(files[0])} maxFiles={1} />
-          </div>
+          <Text size="sm" fw={500} mb={4}>Event Image</Text>
+          <Dropzone onDrop={() => {}} mb="lg">
+            <Group justify="center" py="xl">
+              <IconPhoto size={40} />
+              <div>
+                <Text size="sm">Drag image here or click to upload</Text>
+                <Text size="xs" c="dimmed">PNG, JPG up to 5MB</Text>
+              </div>
+            </Group>
+          </Dropzone>
 
-          <div className="flex items-center gap-3 pt-4 border-t border-secondary-200 dark:border-secondary-700">
-            <Button type="submit" size="lg">Create Event</Button>
-            <Button type="button" variant="secondary" size="lg" onClick={() => navigate('/organizer/events')}>Cancel</Button>
-          </div>
+          <Group pt="md" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
+            <Button type="submit" leftSection={<IconPlus size={16} />}>Create Event</Button>
+            <Button variant="default" onClick={() => navigate('/organizer/events')}>Cancel</Button>
+          </Group>
         </form>
-      </Card>
+      </Paper>
     </motion.div>
   );
 }

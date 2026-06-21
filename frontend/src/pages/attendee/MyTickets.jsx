@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Ticket, QrCode } from 'lucide-react';
-import PageHeader from '../../components/ui/PageHeader';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Tabs from '../../components/ui/Tabs';
-import EmptyState from '../../components/ui/EmptyState';
-import { formatDate, formatCurrency } from '../../lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { Paper, Title, Text, Group, Badge, Button, Tabs, Card } from '@mantine/core';
+import { IconTicket, IconCalendar, IconMapPin, IconEye } from '@tabler/icons-react';
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 
 const tickets = [
   { id: 1, eventName: 'Summer Music Festival', date: '2026-07-15', venue: 'Central Park, NY', ticketType: 'VIP', quantity: 2, total: 178, status: 'active' },
@@ -17,11 +13,34 @@ const tickets = [
   { id: 5, eventName: 'Marathon 2026', date: '2026-11-03', venue: 'Brooklyn Bridge', ticketType: 'General', quantity: 1, total: 60, status: 'cancelled' },
 ];
 
-const statusVariant = {
-  active: 'success',
-  used: 'secondary',
-  cancelled: 'danger',
-};
+const gradients = [
+  'linear-gradient(135deg, #667eea, #764ba2)',
+  'linear-gradient(135deg, #11998e, #38ef7d)',
+  'linear-gradient(135deg, #f093fb, #f5576c)',
+  'linear-gradient(135deg, #4facfe, #00f2fe)',
+  'linear-gradient(135deg, #fa709a, #fee140)',
+];
+
+const qrPattern = [
+  [1,1,1,1,1,1,1,0],
+  [1,0,0,0,0,0,1,0],
+  [1,0,1,1,1,0,1,0],
+  [1,0,1,0,1,0,1,0],
+  [1,0,1,1,1,0,1,0],
+  [1,0,0,0,0,0,1,0],
+  [1,1,1,1,1,1,1,0],
+  [0,0,0,0,0,0,0,0],
+];
+
+function QrGrid() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 4px)', gap: 1 }}>
+      {qrPattern.flat().map((filled, i) => (
+        <div key={i} style={{ width: 4, height: 4, backgroundColor: filled ? '#333' : 'transparent' }} />
+      ))}
+    </div>
+  );
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -33,95 +52,97 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-const gradients = [
-  'from-primary-500 to-violet-500',
-  'from-emerald-500 to-teal-500',
-  'from-amber-500 to-orange-500',
-  'from-rose-500 to-pink-500',
-  'from-cyan-500 to-blue-500',
-];
-
 export default function MyTickets() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('upcoming');
 
   const upcoming = tickets.filter((t) => t.status === 'active');
-  const past = tickets.filter((t) => t.status === 'used' || t.status === 'cancelled');
+  const past = tickets.filter((t) => t.status !== 'active');
   const displayed = activeTab === 'upcoming' ? upcoming : past;
 
-  const tabs = [
-    { value: 'upcoming', label: `Upcoming (${upcoming.length})`, content: null },
-    { value: 'past', label: `Past (${past.length})`, content: null },
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <PageHeader title="My Tickets" description="View and manage your event tickets" />
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 16px' }}>
+      <Title order={2} mb="lg">My Tickets</Title>
 
-      <div className="mt-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} tabs={tabs} />
-      </div>
+      <Tabs value={activeTab} onChange={setActiveTab} mb="lg">
+        <Tabs.List>
+          <Tabs.Tab value="upcoming" leftSection={<IconTicket size={16} />}>
+            Upcoming ({upcoming.length})
+          </Tabs.Tab>
+          <Tabs.Tab value="past" leftSection={<IconCalendar size={16} />}>
+            Past ({past.length})
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
 
       {displayed.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState
-            icon={Ticket}
-            title={activeTab === 'upcoming' ? 'No upcoming tickets' : 'No past tickets'}
-            description={activeTab === 'upcoming' ? 'Browse events and book your first ticket' : 'Your used and cancelled tickets will appear here'}
-          />
-        </div>
+        <Paper p="xl" style={{ textAlign: 'center' }}>
+          <IconTicket size={48} style={{ opacity: 0.3, marginBottom: 16 }} />
+          <Text size="lg" fw={500} mb={4}>
+            {activeTab === 'upcoming' ? 'No upcoming tickets' : 'No past tickets'}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {activeTab === 'upcoming' ? 'Browse events and book your first ticket' : 'Your used and cancelled tickets will appear here'}
+          </Text>
+        </Paper>
       ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="mt-6 space-y-5"
-        >
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {displayed.map((ticket, index) => (
             <motion.div key={ticket.id} variants={itemVariants}>
-              <Card className="overflow-hidden !p-0">
-                <div className="flex flex-col sm:flex-row">
-                  <div className={`h-40 sm:h-auto sm:w-48 shrink-0 bg-gradient-to-br ${gradients[index % gradients.length]} flex items-center justify-center`}>
-                    <Ticket className="h-12 w-12 text-white/60" />
+              <Card shadow="sm" radius="md" withBorder padding={0}>
+                <Group gap={0} wrap="nowrap" align="stretch">
+                  <div
+                    style={{
+                      width: 120,
+                      minHeight: 120,
+                      background: gradients[index % gradients.length],
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <IconTicket size={40} color="rgba(255,255,255,0.6)" />
                   </div>
-                  <div className="flex-1 p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100">
-                          {ticket.eventName}
-                        </h3>
-                        <div className="mt-2 space-y-1.5">
-                          <div className="flex items-center gap-2 text-sm text-secondary-500 dark:text-secondary-400">
-                            <Calendar className="h-4 w-4 shrink-0" />
-                            {formatDate(ticket.date)}
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-secondary-500 dark:text-secondary-400">
-                            <MapPin className="h-4 w-4 shrink-0" />
-                            {ticket.venue}
-                          </div>
-                        </div>
+                  <div style={{ flex: 1, padding: '16px 20px' }}>
+                    <Group justify="space-between" align="flex-start" mb={8}>
+                      <div>
+                        <Text fw={600} size="md">{ticket.eventName}</Text>
+                        <Group gap={4} mt={4}>
+                          <IconCalendar size={14} />
+                          <Text size="sm" c="dimmed">{formatDate(ticket.date)}</Text>
+                        </Group>
+                        <Group gap={4} mt={2}>
+                          <IconMapPin size={14} />
+                          <Text size="sm" c="dimmed">{ticket.venue}</Text>
+                        </Group>
                       </div>
-                      <Badge variant={statusVariant[ticket.status]} size="sm">
-                        {ticket.status}
+                      <Badge color={getStatusColor(ticket.status)} variant="light">
+                        {getStatusLabel(ticket.status)}
                       </Badge>
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-secondary-600 dark:text-secondary-400">
-                      <span className="font-medium text-secondary-900 dark:text-secondary-100">{ticket.ticketType}</span>
-                      <span className="text-secondary-300 dark:text-secondary-600">|</span>
-                      <span>Qty: {ticket.quantity}</span>
-                      <span className="text-secondary-300 dark:text-secondary-600">|</span>
-                      <span>{formatCurrency(ticket.total)}</span>
-                    </div>
-
-                    <div className="mt-4 flex items-center gap-4">
-                      <div className="flex items-center gap-2 rounded-lg border border-dashed border-secondary-300 dark:border-secondary-600 bg-secondary-50 dark:bg-secondary-800/50 px-3 py-2">
-                        <QrCode className="h-5 w-5 text-secondary-400" />
-                        <span className="text-xs text-secondary-400 dark:text-secondary-500">QR Code</span>
-                      </div>
-                      <Button variant="outline" size="sm">View Event</Button>
-                    </div>
+                    </Group>
+                    <Group gap="sm" mb={12}>
+                      <Text size="sm" fw={500}>{ticket.ticketType}</Text>
+                      <Text size="sm" c="dimmed">|</Text>
+                      <Text size="sm" c="dimmed">Qty: {ticket.quantity}</Text>
+                      <Text size="sm" c="dimmed">|</Text>
+                      <Text size="sm" fw={500}>{formatCurrency(ticket.total)}</Text>
+                    </Group>
+                    <Group gap="md">
+                      <Paper withBorder p={4} style={{ borderStyle: 'dashed' }}>
+                        <QrGrid />
+                      </Paper>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        leftSection={<IconEye size={14} />}
+                        onClick={() => navigate(`/events/${ticket.id}`)}
+                      >
+                        View Event
+                      </Button>
+                    </Group>
                   </div>
-                </div>
+                </Group>
               </Card>
             </motion.div>
           ))}

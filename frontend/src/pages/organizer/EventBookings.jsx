@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import PageHeader from '../../components/ui/PageHeader';
-import SearchInput from '../../components/ui/SearchInput';
-import Table from '../../components/ui/Table';
-import Badge from '../../components/ui/Badge';
-import Tabs from '../../components/ui/Tabs';
-import Card from '../../components/ui/Card';
+import { Title, Text, Group, Table, Badge, TextInput, Tabs, Paper, ScrollArea } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 
-const bookingsData = [
+const bookings = [
   { id: 'BK-001', customer: 'Alice Johnson', tickets: 2, total: 120, status: 'confirmed', date: '2026-06-20', event: 'Music Festival' },
   { id: 'BK-002', customer: 'Bob Smith', tickets: 1, total: 75, status: 'checked-in', date: '2026-06-19', event: 'Tech Conference' },
   { id: 'BK-003', customer: 'Carol White', tickets: 3, total: 180, status: 'pending', date: '2026-06-18', event: 'Music Festival' },
@@ -19,54 +16,65 @@ const bookingsData = [
 
 const events = ['All Events', 'Music Festival', 'Tech Conference', 'Art Workshop', 'Business Networking'];
 
-function statusVariant(status) {
-  if (status === 'confirmed') return 'success';
-  if (status === 'pending') return 'warning';
-  if (status === 'cancelled') return 'danger';
-  if (status === 'checked-in') return 'primary';
-  return 'secondary';
-}
-
 export default function EventBookings() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('All Events');
 
-  const filtered = bookingsData.filter((b) => {
-    const matchSearch = b.id.toLowerCase().includes(search.toLowerCase()) || b.customer.toLowerCase().includes(search.toLowerCase());
-    if (activeTab !== 'All Events') return matchSearch && b.event === activeTab;
-    return matchSearch;
+  const filtered = bookings.filter((b) => {
+    const q = search.toLowerCase();
+    const match = b.id.toLowerCase().includes(q) || b.customer.toLowerCase().includes(q);
+    if (activeTab !== 'All Events') return match && b.event === activeTab;
+    return match;
   });
 
-  const columns = [
-    { key: 'id', label: 'Booking ID', render: (val) => <span className="font-mono text-xs text-secondary-600 dark:text-secondary-400">{val}</span> },
-    { key: 'customer', label: 'Customer', render: (val) => <span className="font-medium text-secondary-900 dark:text-secondary-100">{val}</span> },
-    { key: 'tickets', label: 'Tickets', sortable: true },
-    { key: 'total', label: 'Total', render: (val) => <span className="font-medium text-secondary-900 dark:text-secondary-100">${val}</span>, sortable: true },
-    { key: 'status', label: 'Status', render: (val) => <Badge variant={statusVariant(val)} size="sm">{val}</Badge> },
-    { key: 'date', label: 'Date', render: (val) => <span className="text-secondary-500 dark:text-secondary-400">{new Date(val).toLocaleDateString()}</span>, sortable: true },
-  ];
-
-  const tabs = events.map((event) => ({
-    value: event,
-    label: event,
-  }));
+  const rows = filtered.map((b) => (
+    <Table.Tr key={b.id}>
+      <Table.Td><Text size="sm" ff="mono">{b.id}</Text></Table.Td>
+      <Table.Td><Text size="sm" fw={500}>{b.customer}</Text></Table.Td>
+      <Table.Td><Text size="sm">{b.tickets}</Text></Table.Td>
+      <Table.Td><Text size="sm">{formatCurrency(b.total)}</Text></Table.Td>
+      <Table.Td><Badge color={getStatusColor(b.status)} variant="light" size="sm">{getStatusLabel(b.status)}</Badge></Table.Td>
+      <Table.Td><Text size="sm" c="dimmed">{formatDate(b.date)}</Text></Table.Td>
+    </Table.Tr>
+  ));
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
-      <PageHeader title="Event Bookings" description="View and manage all bookings across your events" />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <Title order={2} mb="lg">Event Bookings</Title>
 
-      <Card padding="none">
-        <div className="p-6 pb-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} tabs={tabs} />
-          <div className="mt-4">
-            <SearchInput value={search} onChange={setSearch} placeholder="Search by booking ID or customer name..." />
-          </div>
-        </div>
+      <Paper withBorder radius="md">
+        <Tabs value={activeTab} onChange={setActiveTab}>
+          <Group justify="space-between" p="md" pb={0}>
+            <Tabs.List>
+              {events.map((e) => (
+                <Tabs.Tab key={e} value={e}>{e}</Tabs.Tab>
+              ))}
+            </Tabs.List>
+            <TextInput
+              placeholder="Search by booking ID or customer..."
+              leftSection={<IconSearch size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Group>
+        </Tabs>
 
-        <div className="p-6">
-          <Table columns={columns} data={filtered} emptyMessage="No bookings match your search" />
-        </div>
-      </Card>
+        <ScrollArea>
+          <Table striped highlightOnHover p="md">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Booking ID</Table.Th>
+                <Table.Th>Customer</Table.Th>
+                <Table.Th>Tickets</Table.Th>
+                <Table.Th>Total</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Date</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        </ScrollArea>
+      </Paper>
     </motion.div>
   );
 }

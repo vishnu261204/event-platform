@@ -1,71 +1,74 @@
-import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import dayjs from 'dayjs';
-import PageHeader from '../../components/ui/PageHeader';
-import Card from '../../components/ui/Card';
-import SearchInput from '../../components/ui/SearchInput';
-import Table from '../../components/ui/Table';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
+import { Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput } from '@mantine/core';
+import { IconSearch, IconEye, IconTrash } from '@tabler/icons-react';
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 
-const sampleBookings = [
-  { id: 'Bk-1004', event: 'Tech Conference 2025', user: 'Alice Johnson', tickets: 2, total: 149.99, status: 'confirmed', date: '2025-06-20' },
-  { id: 'Bk-1003', event: 'Summer Music Festival', user: 'Bob Smith', tickets: 4, total: 320.00, status: 'checked-in', date: '2025-06-19' },
-  { id: 'Bk-1002', event: 'Modern Art Workshop', user: 'Carol White', tickets: 1, total: 45.00, status: 'pending', date: '2025-06-18' },
-  { id: 'Bk-1001', event: 'Global Business Summit', user: 'David Brown', tickets: 3, total: 299.99, status: 'confirmed', date: '2025-06-17' },
-  { id: 'Bk-1000', event: 'Wellness Yoga Retreat', user: 'Eve Davis', tickets: 1, total: 120.00, status: 'cancelled', date: '2025-06-16' },
-  { id: 'Bk-999', event: 'Startup Pitch Night', user: 'Frank Wilson', tickets: 2, total: 80.00, status: 'pending', date: '2025-06-15' },
-  { id: 'Bk-998', event: 'Photography Masterclass', user: 'Grace Lee', tickets: 1, total: 65.00, status: 'confirmed', date: '2025-06-14' },
-  { id: 'Bk-997', event: 'AI & Machine Learning Expo', user: 'Henry Taylor', tickets: 3, total: 210.00, status: 'checked-in', date: '2025-06-13' },
-  { id: 'Bk-996', event: 'Jazz Night Under Stars', user: 'Ivy Martinez', tickets: 2, total: 110.00, status: 'confirmed', date: '2025-06-12' },
-  { id: 'Bk-995', event: 'Outdoor Adventure Camp', user: 'Jack Anderson', tickets: 5, total: 375.00, status: 'cancelled', date: '2025-06-11' },
+const bookings = [
+  { id: 'BK-001', event: 'Tech Conference 2025', user: 'Alice Johnson', tickets: 2, total: 299, status: 'confirmed', date: '2025-05-10' },
+  { id: 'BK-002', event: 'Summer Music Festival', user: 'Bob Smith', tickets: 4, total: 596, status: 'confirmed', date: '2025-06-01' },
+  { id: 'BK-003', event: 'Modern Art Workshop', user: 'Carol White', tickets: 1, total: 79, status: 'completed', date: '2025-04-20' },
+  { id: 'BK-004', event: 'Business Leadership Summit', user: 'David Brown', tickets: 3, total: 1497, status: 'pending', date: '2025-07-15' },
+  { id: 'BK-005', event: 'Annual Charity Gala', user: 'Eve Davis', tickets: 2, total: 398, status: 'cancelled', date: '2025-08-01' },
+  { id: 'BK-006', event: 'Photography Expo', user: 'Frank Miller', tickets: 1, total: 49, status: 'completed', date: '2025-03-25' },
+  { id: 'BK-007', event: 'Startup Pitch Night', user: 'Grace Wilson', tickets: 2, total: 200, status: 'confirmed', date: '2025-09-10' },
+  { id: 'BK-008', event: 'Wellness Retreat', user: 'Henry Taylor', tickets: 1, total: 599, status: 'pending', date: '2025-10-20' },
 ];
 
-const statusVariant = (status) => {
-  if (status === 'confirmed') return 'success';
-  if (status === 'pending') return 'warning';
-  if (status === 'cancelled') return 'danger';
-  if (status === 'checked-in') return 'primary';
-  return 'secondary';
-};
-
-const columns = [
-  { key: 'id', label: 'Booking ID' },
-  { key: 'event', label: 'Event' },
-  { key: 'user', label: 'User' },
-  { key: 'tickets', label: 'Tickets' },
-  { key: 'total', label: 'Total', render: (v) => `$${v.toFixed(2)}` },
-  { key: 'status', label: 'Status', render: (v) => <Badge variant={statusVariant(v)} size="sm">{v}</Badge> },
-  { key: 'date', label: 'Date', render: (v) => dayjs(v).format('MMM D, YYYY') },
-  { key: 'actions', label: 'Actions', sortable: false, render: () => <Button variant="ghost" size="xs">View</Button> },
-];
-
-export default function AdminBookings() {
-  const [search, setSearch] = useState('');
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return sampleBookings;
-    const q = search.toLowerCase();
-    return sampleBookings.filter(
-      (b) => b.id.toLowerCase().includes(q) || b.event.toLowerCase().includes(q) || b.user.toLowerCase().includes(q)
-    );
-  }, [search]);
-
+export default function Bookings() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
-      <PageHeader title="Manage Bookings" description="View and manage all booking records" />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <Group justify="space-between" mb="lg">
+        <Title order={2}>Manage Bookings</Title>
+        <TextInput
+          placeholder="Search bookings..."
+          leftSection={<IconSearch size={16} />}
+          w={300}
+        />
+      </Group>
 
-      <Card padding="none">
-        <div className="p-6 pb-0">
-          <SearchInput value={search} onChange={setSearch} placeholder="Search bookings by ID, event, or user..." className="max-w-sm" />
-        </div>
-        <Table columns={columns} data={filtered} emptyMessage="No bookings match your search" />
-      </Card>
+      <Paper p="lg" radius="md" withBorder>
+        <ScrollArea>
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Booking ID</Table.Th>
+                <Table.Th>Event</Table.Th>
+                <Table.Th>User</Table.Th>
+                <Table.Th>Tickets</Table.Th>
+                <Table.Th>Total</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>Actions</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {bookings.map((booking) => (
+                <Table.Tr key={booking.id}>
+                  <Table.Td>
+                    <Text fw={500}>{booking.id}</Text>
+                  </Table.Td>
+                  <Table.Td>{booking.event}</Table.Td>
+                  <Table.Td>{booking.user}</Table.Td>
+                  <Table.Td>{booking.tickets}</Table.Td>
+                  <Table.Td>{formatCurrency(booking.total)}</Table.Td>
+                  <Table.Td>
+                    <Badge color={getStatusColor(booking.status)} size="sm">
+                      {getStatusLabel(booking.status)}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>{formatDate(booking.date)}</Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <IconEye size={18} style={{ cursor: 'pointer', color: 'var(--mantine-color-blue-6)' }} />
+                      <IconTrash size={18} style={{ cursor: 'pointer', color: 'var(--mantine-color-red-6)' }} />
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </ScrollArea>
+      </Paper>
     </motion.div>
   );
 }

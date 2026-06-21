@@ -1,134 +1,150 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, CalendarCheck, Ticket, DollarSign } from 'lucide-react';
-import dayjs from 'dayjs';
-import Card from '../../components/ui/Card';
-import StatsCard from '../../components/ui/StatsCard';
-import PageHeader from '../../components/ui/PageHeader';
-import Table from '../../components/ui/Table';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
+import { Paper, Title, Text, Group, SimpleGrid, Card, Table, ScrollArea, Badge } from '@mantine/core';
+import { IconUsers, IconCalendarCheck, IconTicket, IconCurrencyDollar } from '@tabler/icons-react';
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 
-const statsData = [
-  { label: 'Total Users', value: '12,845', icon: Users, trend: 12 },
-  { label: 'Total Events', value: '486', icon: CalendarCheck, trend: 8 },
-  { label: 'Total Bookings', value: '3,217', icon: Ticket, trend: 23 },
-  { label: 'Revenue', value: '$84,290', icon: DollarSign, trend: 18 },
-];
-
-const recentBookings = [
-  { id: 'Bk-1004', event: 'Tech Conference 2025', user: 'Alice Johnson', tickets: 2, total: 149.99, status: 'confirmed', date: '2025-06-20' },
-  { id: 'Bk-1003', event: 'Music Festival', user: 'Bob Smith', tickets: 4, total: 320.00, status: 'checked-in', date: '2025-06-19' },
-  { id: 'Bk-1002', event: 'Art Workshop', user: 'Carol White', tickets: 1, total: 45.00, status: 'pending', date: '2025-06-18' },
-  { id: 'Bk-1001', event: 'Business Summit', user: 'David Brown', tickets: 3, total: 299.99, status: 'confirmed', date: '2025-06-17' },
-  { id: 'Bk-1000', event: 'Yoga Retreat', user: 'Eve Davis', tickets: 1, total: 120.00, status: 'cancelled', date: '2025-06-16' },
+const stats = [
+  { label: 'Total Users', value: '24,582', icon: IconUsers, color: 'blue' },
+  { label: 'Total Events', value: '1,349', icon: IconCalendarCheck, color: 'violet' },
+  { label: 'Total Bookings', value: '12,847', icon: IconTicket, color: 'teal' },
+  { label: 'Revenue', value: '$189,430', icon: IconCurrencyDollar, color: 'green' },
 ];
 
 const recentUsers = [
-  { id: 'u1', name: 'Frank Wilson', email: 'frank@example.com', role: 'organizer', joined: '2025-06-20', avatar: 'FW' },
-  { id: 'u2', name: 'Grace Lee', email: 'grace@example.com', role: 'attendee', joined: '2025-06-19', avatar: 'GL' },
-  { id: 'u3', name: 'Henry Taylor', email: 'henry@example.com', role: 'attendee', joined: '2025-06-18', avatar: 'HT' },
-  { id: 'u4', name: 'Ivy Martinez', email: 'ivy@example.com', role: 'organizer', joined: '2025-06-17', avatar: 'IM' },
-  { id: 'u5', name: 'Jack Anderson', email: 'jack@example.com', role: 'admin', joined: '2025-06-16', avatar: 'JA' },
+  { name: 'Alice Johnson', email: 'alice@example.com', role: 'User', status: 'active' },
+  { name: 'Bob Smith', email: 'bob@example.com', role: 'Organizer', status: 'active' },
+  { name: 'Carol White', email: 'carol@example.com', role: 'Admin', status: 'active' },
+  { name: 'David Brown', email: 'david@example.com', role: 'User', status: 'inactive' },
+  { name: 'Eve Davis', email: 'eve@example.com', role: 'User', status: 'active' },
 ];
 
 const recentEvents = [
-  { id: 'e1', title: 'Tech Conference 2025', category: 'Technology', date: '2025-07-15', status: 'published', ticketsSold: 120 },
-  { id: 'e2', title: 'Music Festival', category: 'Music', date: '2025-08-01', status: 'published', ticketsSold: 340 },
-  { id: 'e3', title: 'Art Workshop', category: 'Arts', date: '2025-06-25', status: 'draft', ticketsSold: 0 },
-  { id: 'e4', title: 'Business Summit', category: 'Business', date: '2025-09-10', status: 'published', ticketsSold: 85 },
-  { id: 'e5', title: 'Yoga Retreat', category: 'Wellness', date: '2025-07-20', status: 'cancelled', ticketsSold: 15 },
+  { title: 'Tech Conference 2025', date: '2025-06-15', status: 'published' },
+  { title: 'Music Festival', date: '2025-07-20', status: 'published' },
+  { title: 'Art Workshop', date: '2025-05-10', status: 'completed' },
+  { title: 'Business Summit', date: '2025-08-05', status: 'draft' },
+  { title: 'Charity Gala', date: '2025-09-12', status: 'published' },
 ];
 
-const bookingColumns = [
-  { key: 'id', label: 'Booking ID' },
-  { key: 'event', label: 'Event' },
-  { key: 'user', label: 'User' },
-  { key: 'tickets', label: 'Tickets' },
-  { key: 'total', label: 'Total', render: (v) => `$${v.toFixed(2)}` },
-  { key: 'status', label: 'Status', render: (v) => {
-    const map = { confirmed: 'success', pending: 'warning', cancelled: 'danger', 'checked-in': 'primary' };
-    return <Badge variant={map[v] || 'secondary'} size="sm">{v}</Badge>;
-  }},
-  { key: 'date', label: 'Date', render: (v) => dayjs(v).format('MMM D, YYYY') },
+const recentBookings = [
+  { event: 'Tech Conference', user: 'Alice Johnson', status: 'confirmed', total: 299 },
+  { event: 'Music Festival', user: 'Bob Smith', status: 'confirmed', total: 149 },
+  { event: 'Art Workshop', user: 'Carol White', status: 'completed', total: 79 },
+  { event: 'Business Summit', user: 'David Brown', status: 'pending', total: 499 },
+  { event: 'Charity Gala', user: 'Eve Davis', status: 'cancelled', total: 199 },
 ];
 
-const roleBadge = (role) => {
-  const map = { admin: 'danger', organizer: 'warning', attendee: 'primary' };
-  return <Badge variant={map[role] || 'secondary'} size="sm">{role}</Badge>;
-};
-
-export default function AdminDashboard() {
+export default function Dashboard() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
-      <PageHeader title="Admin Dashboard" description="Overview of your platform" />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <Title order={2} mb="lg">Admin Dashboard</Title>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {statsData.map((stat, i) => (
-          <StatsCard key={i} icon={stat.icon} label={stat.label} value={stat.value} trend={stat.trend} />
-        ))}
-      </div>
-
-      <Card padding="none">
-        <div className="p-6 pb-0">
-          <h2 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">Recent Bookings</h2>
-        </div>
-        <Table columns={bookingColumns} data={recentBookings} emptyMessage="No bookings yet" />
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <h2 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">Recent Users</h2>
-          <div className="space-y-3">
-            {recentUsers.map((user) => (
-              <div key={user.id} className="flex items-center justify-between py-2 border-b border-secondary-100 dark:border-secondary-700 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-                    {user.avatar}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-secondary-900 dark:text-secondary-100">{user.name}</p>
-                    <p className="text-xs text-secondary-500">{user.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {roleBadge(user.role)}
-                  <span className="text-xs text-secondary-400">{dayjs(user.joined).format('MMM D')}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-secondary-100 dark:border-secondary-700">
-            <Button variant="outline" size="sm" className="w-full">View All Users</Button>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">Recent Events</h2>
-          <div className="space-y-3">
-            {recentEvents.map((event) => (
-              <div key={event.id} className="flex items-center justify-between py-2 border-b border-secondary-100 dark:border-secondary-700 last:border-0">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} mb="xl">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Paper key={stat.label} p="md" radius="md" withBorder>
+              <Group justify="space-between">
                 <div>
-                  <p className="text-sm font-medium text-secondary-900 dark:text-secondary-100">{event.title}</p>
-                  <p className="text-xs text-secondary-500">{event.category} &middot; {dayjs(event.date).format('MMM D, YYYY')}</p>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>{stat.label}</Text>
+                  <Text size="xl" fw={700}>{stat.value}</Text>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-secondary-500">{event.ticketsSold} sold</span>
-                  <Badge variant={event.status === 'published' ? 'success' : event.status === 'draft' ? 'warning' : 'danger'} size="sm">{event.status}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-secondary-100 dark:border-secondary-700">
-            <Button variant="outline" size="sm" className="w-full">View All Events</Button>
-          </div>
-        </Card>
-      </div>
+                <Icon size={32} stroke={1.5} color={`var(--mantine-color-${stat.color}-6)`} />
+              </Group>
+            </Paper>
+          );
+        })}
+      </SimpleGrid>
+
+      <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="lg">
+        <Paper p="md" radius="md" withBorder>
+          <Title order={4} mb="sm">Recent Users</Title>
+          <ScrollArea h={260}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Name</Table.Th>
+                  <Table.Th>Email</Table.Th>
+                  <Table.Th>Role</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {recentUsers.map((user) => (
+                  <Table.Tr key={user.email}>
+                    <Table.Td>{user.name}</Table.Td>
+                    <Table.Td>{user.email}</Table.Td>
+                    <Table.Td>{user.role}</Table.Td>
+                    <Table.Td>
+                      <Badge color={getStatusColor(user.status)} size="sm">
+                        {getStatusLabel(user.status)}
+                      </Badge>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
+        </Paper>
+
+        <Paper p="md" radius="md" withBorder>
+          <Title order={4} mb="sm">Recent Events</Title>
+          <ScrollArea h={260}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Title</Table.Th>
+                  <Table.Th>Date</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {recentEvents.map((event) => (
+                  <Table.Tr key={event.title}>
+                    <Table.Td>{event.title}</Table.Td>
+                    <Table.Td>{formatDate(event.date)}</Table.Td>
+                    <Table.Td>
+                      <Badge color={getStatusColor(event.status)} size="sm">
+                        {getStatusLabel(event.status)}
+                      </Badge>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
+        </Paper>
+
+        <Paper p="md" radius="md" withBorder>
+          <Title order={4} mb="sm">Recent Bookings</Title>
+          <ScrollArea h={260}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Event</Table.Th>
+                  <Table.Th>User</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Total</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {recentBookings.map((booking) => (
+                  <Table.Tr key={booking.event + booking.user}>
+                    <Table.Td>{booking.event}</Table.Td>
+                    <Table.Td>{booking.user}</Table.Td>
+                    <Table.Td>
+                      <Badge color={getStatusColor(booking.status)} size="sm">
+                        {getStatusLabel(booking.status)}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>{formatCurrency(booking.total)}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
+        </Paper>
+      </SimpleGrid>
     </motion.div>
   );
 }

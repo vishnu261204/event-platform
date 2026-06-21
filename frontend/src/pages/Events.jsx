@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { SearchInput, Card, Badge, Button, Pagination, EmptyState } from '../components/ui'
-import { Calendar, MapPin, Search } from 'lucide-react'
+import { Container, Title, Text, Card, Badge, Button, SimpleGrid, Group, Stack, TextInput } from '@mantine/core'
+import { IconSearch, IconCalendar, IconMapPin, IconX } from '@tabler/icons-react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import dayjs from 'dayjs'
 
 const categories = ['All', 'Music', 'Sports', 'Arts', 'Food', 'Tech', 'Business']
 
@@ -21,8 +22,6 @@ const events = [
   { id: 12, title: 'Investment Summit', category: 'Business', date: '2026-10-05', time: '8:00 AM', location: 'Wall Street', price: 500, image: '', status: 'available', organizer: 'Finance Group', description: 'Top investors share market insights.' },
 ]
 
-const ITEMS_PER_PAGE = 6
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -33,61 +32,10 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-function EventCard({ event }) {
-  const navigate = useNavigate()
-
-  return (
-    <motion.div variants={itemVariants}>
-      <Card className="overflow-hidden h-full flex flex-col bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-        <div className="relative h-48 bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center">
-          {event.image ? (
-            <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
-          ) : (
-            <Calendar className="w-12 h-12 text-white/60" />
-          )}
-          <div className="absolute top-3 left-3">
-            <Badge className="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm font-semibold shadow">
-              {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </Badge>
-          </div>
-          <div className="absolute top-3 right-3">
-            <Badge className={`px-3 py-1 rounded-lg text-xs font-semibold shadow ${event.status === 'sold-out' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-              {event.status === 'sold-out' ? 'Sold Out' : 'Available'}
-            </Badge>
-          </div>
-        </div>
-        <div className="p-5 flex-1 flex flex-col gap-3">
-          <Badge className="self-start bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-3 py-0.5 rounded-full text-xs font-medium">
-            {event.category}
-          </Badge>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight line-clamp-2">
-            {event.title}
-          </h3>
-          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-            <MapPin className="w-4 h-4 shrink-0" />
-            <span className="truncate">{event.location}</span>
-          </div>
-          <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-800">
-            <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
-              ${event.price}
-            </span>
-            <Button
-              onClick={() => navigate(`/events/${event.id}`)}
-              className="bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-all"
-            >
-              View Details
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </motion.div>
-  )
-}
-
 export default function Events() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
-  const [currentPage, setCurrentPage] = useState(1)
 
   const filtered = useMemo(() => {
     return events.filter((e) => {
@@ -97,75 +45,84 @@ export default function Events() {
     })
   }, [search, activeCategory])
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
-  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Discover Events
-          </h1>
-          <div className="w-full sm:w-72">
-            <SearchInput
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1) }}
-              placeholder="Search events..."
-              className="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 pl-10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-              icon={<Search className="w-5 h-5 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />}
-            />
+    <Container size="xl" py="xl">
+      <Stack gap="lg">
+        <Group justify="space-between" align="flex-start">
+          <div>
+            <Title order={1}>Discover Events</Title>
+            <Text c="dimmed">Find and book the best events in your city</Text>
           </div>
-        </div>
+          <TextInput
+            placeholder="Search events..."
+            leftSection={<IconSearch size={16} />}
+            rightSection={search ? <IconX size={16} style={{ cursor: 'pointer' }} onClick={() => setSearch('')} /> : null}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            w={{ base: '100%', sm: 300 }}
+          />
+        </Group>
 
-        <div className="flex flex-wrap gap-2 mb-8">
+        <Group gap="xs">
           {categories.map((cat) => (
-            <button
+            <Button
               key={cat}
-              onClick={() => { setActiveCategory(cat); setCurrentPage(1) }}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${
-                activeCategory === cat
-                  ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white border-transparent shadow-md'
-                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400'
-              }`}
+              variant={activeCategory === cat ? 'filled' : 'outline'}
+              size="sm"
+              radius="xl"
+              onClick={() => setActiveCategory(cat)}
             >
               {cat}
-            </button>
+            </Button>
           ))}
-        </div>
+        </Group>
 
-        {paginated.length > 0 ? (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {paginated.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
+        {filtered.length > 0 ? (
+          <motion.div variants={containerVariants} initial="hidden" animate="visible">
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+              {filtered.map((event) => (
+                <motion.div key={event.id} variants={itemVariants}>
+                  <Card shadow="sm" padding="lg" radius="md" withBorder style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Card.Section style={{ position: 'relative', height: 192, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <IconCalendar size={48} color="rgba(255,255,255,0.6)" />
+                      <Badge
+                        style={{ position: 'absolute', top: 12, left: 12 }}
+                        size="lg"
+                        radius="sm"
+                      >
+                        {dayjs(event.date).format('MMM D')}
+                      </Badge>
+                    </Card.Section>
+
+                    <Badge variant="light" color="blue" size="sm" mt="md" style={{ alignSelf: 'flex-start' }}>
+                      {event.category}
+                    </Badge>
+
+                    <Title order={3} mt="xs">{event.title}</Title>
+
+                    <Group gap="xs" mt="xs">
+                      <IconMapPin size={14} />
+                      <Text size="sm" c="dimmed">{event.location}</Text>
+                    </Group>
+
+                    <Group justify="space-between" mt="auto" pt="md">
+                      <Text fw={700} size="xl" c="blue">${event.price}</Text>
+                      <Button onClick={() => navigate(`/events/${event.id}`)}>
+                        View Details
+                      </Button>
+                    </Group>
+                  </Card>
+                </motion.div>
+              ))}
+            </SimpleGrid>
           </motion.div>
         ) : (
-          <div className="py-20">
-            <EmptyState
-              title="No events found"
-              description="Try adjusting your search or filter."
-              className="text-gray-500 dark:text-gray-400"
-            />
-          </div>
+          <Stack align="center" py="xl">
+            <Title order={3}>No events found</Title>
+            <Text c="dimmed">Try adjusting your search or filter.</Text>
+          </Stack>
         )}
-
-        {totalPages > 1 && (
-          <div className="mt-10 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              className="flex items-center gap-2"
-            />
-          </div>
-        )}
-      </div>
-    </div>
+      </Stack>
+    </Container>
   )
 }

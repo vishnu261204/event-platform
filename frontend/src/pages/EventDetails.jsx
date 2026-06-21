@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Card, Badge, Button } from '../components/ui'
-import { Calendar, MapPin, Clock, Users, Share2, Heart } from 'lucide-react'
+import { Container, Title, Text, Card, Badge, Button, Grid, SimpleGrid, Group, Stack, Divider, Breadcrumbs, Anchor, ActionIcon } from '@mantine/core'
+import { IconCalendar, IconMapPin, IconClock, IconUsers, IconHeart, IconShare, IconMinus, IconPlus } from '@tabler/icons-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import dayjs from 'dayjs'
 
 const events = [
   { id: 1, title: 'Summer Music Festival', category: 'Music', date: '2026-07-15', time: '4:00 PM', location: 'Central Park, NY', price: 89, image: '', status: 'available', organizer: 'Live Nation', description: 'Annual summer music festival featuring top artists from around the world. Enjoy live performances, food stalls, and a vibrant atmosphere across multiple stages. This is the biggest music event of the summer season.' },
@@ -19,6 +20,12 @@ const events = [
   { id: 12, title: 'Investment Summit', category: 'Business', date: '2026-10-05', time: '8:00 AM', location: 'Wall Street', price: 500, image: '', status: 'available', organizer: 'Finance Group', description: 'Top investors share market insights and strategies for 2026.' },
 ]
 
+const items = [
+  { title: 'Home', href: '/' },
+  { title: 'Events', href: '/events' },
+  { title: 'Event Details', href: '#' },
+]
+
 export default function EventDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -30,224 +37,210 @@ export default function EventDetails() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Event Not Found</h2>
-          <Button onClick={() => navigate('/events')} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-semibold">
-            Back to Events
-          </Button>
-        </div>
-      </div>
+      <Container size="xl" py="xl">
+        <Stack align="center" py="xl">
+          <Title order={2}>Event Not Found</Title>
+          <Button onClick={() => navigate('/events')}>Back to Events</Button>
+        </Stack>
+      </Container>
     )
   }
 
-  const total = event.price * tickets
+  const subtotal = event.price * tickets
+  const fees = subtotal * 0.05
+  const total = subtotal + fees
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <nav className="flex items-center gap-2 text-sm mb-6 text-gray-500 dark:text-gray-400">
-          <Link to="/" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Home</Link>
-          <span>/</span>
-          <Link to="/events" className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Events</Link>
-          <span>/</span>
-          <span className="text-gray-900 dark:text-white font-medium truncate max-w-[200px]">{event.title}</span>
-        </nav>
+    <Container size="xl" py="lg">
+      <Breadcrumbs mb="lg">
+        {items.map((item, index) => (
+          index < items.length - 1
+            ? <Anchor component={Link} to={item.href} key={item.title}>{item.title}</Anchor>
+            : <Text key={item.title}>{event.title}</Text>
+        ))}
+      </Breadcrumbs>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:w-[70%] space-y-6"
-          >
-            <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center overflow-hidden">
-              {event.image ? (
-                <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
-              ) : (
-                <Calendar className="w-20 h-20 text-white/40" />
-              )}
-              <div className="absolute top-4 right-4 flex gap-2">
-                <button onClick={() => setFavorited(!favorited)} className={`p-2.5 rounded-full transition-all shadow-lg ${favorited ? 'bg-red-500 text-white' : 'bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'}`}>
-                  <Heart className={`w-5 h-5 ${favorited ? 'fill-current' : ''}`} />
-                </button>
-                <button className="p-2.5 rounded-full bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition-all shadow-lg">
-                  <Share2 className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="absolute top-4 left-4">
-                <Badge className={`px-4 py-1.5 rounded-lg text-sm font-semibold shadow-lg ${event.status === 'sold-out' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-                  {event.status === 'sold-out' ? 'Sold Out' : 'Available'}
-                </Badge>
-              </div>
-            </div>
-
-            <Card className="p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <Badge className="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-3 py-1 rounded-full text-xs font-semibold mb-3 inline-block">
-                    {event.category}
+      <Grid gutter="lg">
+        <Grid.Col span={{ base: 12, lg: 8 }}>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <Stack gap="lg">
+              <Card padding={0} radius="md" withBorder style={{ overflow: 'hidden' }}>
+                <div style={{ position: 'relative', height: 320, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconCalendar size={64} color="rgba(255,255,255,0.4)" />
+                  <Group gap="xs" style={{ position: 'absolute', top: 16, right: 16 }}>
+                    <ActionIcon
+                      variant={favorited ? 'filled' : 'default'}
+                      color={favorited ? 'red' : 'gray'}
+                      size="lg"
+                      radius="xl"
+                      onClick={() => setFavorited(!favorited)}
+                    >
+                      <IconHeart size={20} />
+                    </ActionIcon>
+                    <ActionIcon variant="default" size="lg" radius="xl">
+                      <IconShare size={20} />
+                    </ActionIcon>
+                  </Group>
+                  <Badge
+                    color={event.status === 'sold-out' ? 'red' : 'green'}
+                    size="lg"
+                    style={{ position: 'absolute', top: 16, left: 16 }}
+                  >
+                    {event.status === 'sold-out' ? 'Sold Out' : 'Available'}
                   </Badge>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-                    {event.title}
-                  </h1>
                 </div>
-              </div>
+              </Card>
 
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-                <span className="font-medium text-gray-700 dark:text-gray-300">By</span>
-                <span className="text-primary-600 dark:text-primary-400 font-semibold">{event.organizer}</span>
-              </div>
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="xs">
+                  <div>
+                    <Badge variant="light" color="blue" size="sm" mb="xs">{event.category}</Badge>
+                    <Title order={1}>{event.title}</Title>
+                  </div>
+                </Group>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400">
-                    <Calendar className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Date</p>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Time</p>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.time}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Location</p>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.location}</p>
-                  </div>
-                </div>
-              </div>
+                <Group gap="xs" mb="md">
+                  <Text size="sm" c="dimmed">By</Text>
+                  <Text size="sm" fw={600}>{event.organizer}</Text>
+                </Group>
 
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">About This Event</h2>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{event.description}</p>
-              </div>
-            </Card>
+                <Grid gutter="md" mb="lg">
+                  <Grid.Col span={{ base: 12, sm: 4 }}>
+                    <Card withBorder padding="sm" radius="md" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <IconCalendar size={24} color="var(--mantine-color-blue-6)" />
+                      <div>
+                        <Text size="xs" c="dimmed" tt="uppercase">Date</Text>
+                        <Text fw={600} size="sm">{dayjs(event.date).format('dddd, MMMM D, YYYY')}</Text>
+                      </div>
+                    </Card>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 4 }}>
+                    <Card withBorder padding="sm" radius="md" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <IconClock size={24} color="var(--mantine-color-blue-6)" />
+                      <div>
+                        <Text size="xs" c="dimmed" tt="uppercase">Time</Text>
+                        <Text fw={600} size="sm">{event.time}</Text>
+                      </div>
+                    </Card>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 4 }}>
+                    <Card withBorder padding="sm" radius="md" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <IconMapPin size={24} color="var(--mantine-color-blue-6)" />
+                      <div>
+                        <Text size="xs" c="dimmed" tt="uppercase">Location</Text>
+                        <Text fw={600} size="sm">{event.location}</Text>
+                      </div>
+                    </Card>
+                  </Grid.Col>
+                </Grid>
+
+                <Divider mb="md" />
+
+                <Title order={2} size="h3" mb="xs">About This Event</Title>
+                <Text>{event.description}</Text>
+              </Card>
+            </Stack>
           </motion.div>
+        </Grid.Col>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:w-[30%]"
-          >
-            <div className="sticky top-24 space-y-4">
-              <Card className="p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Tickets</h3>
-                <p className="text-3xl font-extrabold text-primary-600 dark:text-primary-400 mb-6">
-                  ${event.price}<span className="text-base font-normal text-gray-500 dark:text-gray-400"> / person</span>
-                </p>
+        <Grid.Col span={{ base: 12, lg: 4 }}>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ position: 'sticky', top: 80 }}>
+            <Stack gap="md">
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Title order={3} mb="xs">Tickets</Title>
+                <Text size="xxxl" fw={700} c="blue" mb="md">
+                  ${event.price}
+                  <Text span size="sm" c="dimmed" fw={400}> / person</Text>
+                </Text>
 
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Quantity</span>
-                  <div className="flex items-center gap-3">
-                    <button
+                <Group justify="space-between" mb="md">
+                  <Text fw={600}>Quantity</Text>
+                  <Group gap="xs">
+                    <ActionIcon
+                      variant="outline"
+                      size="md"
                       onClick={() => setTickets(Math.max(1, tickets - 1))}
                       disabled={event.status === 'sold-out'}
-                      className="w-9 h-9 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold text-lg"
                     >
-                      -
-                    </button>
-                    <span className="w-8 text-center font-bold text-lg text-gray-900 dark:text-white">{tickets}</span>
-                    <button
+                      <IconMinus size={16} />
+                    </ActionIcon>
+                    <Text fw={700} size="lg" w={32} ta="center">{tickets}</Text>
+                    <ActionIcon
+                      variant="outline"
+                      size="md"
                       onClick={() => setTickets(tickets + 1)}
                       disabled={event.status === 'sold-out'}
-                      className="w-9 h-9 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all font-bold text-lg"
                     >
-                      +
-                    </button>
-                  </div>
-                </div>
+                      <IconPlus size={16} />
+                    </ActionIcon>
+                  </Group>
+                </Group>
 
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">${total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-600 dark:text-gray-400">Fees</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">${(total * 0.05).toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>
-                    <span className="text-lg font-bold text-primary-600 dark:text-primary-400">${(total * 1.05).toFixed(2)}</span>
-                  </div>
-                </div>
+                <Divider my="sm" />
 
-                <Button
-                  disabled={event.status === 'sold-out'}
-                  className={`w-full py-3 rounded-xl text-base font-bold transition-all ${
-                    event.status === 'sold-out'
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white shadow-lg hover:shadow-xl'
-                  }`}
-                >
-                  {event.status === 'sold-out' ? 'Sold Out' : `Book Now — $${(total * 1.05).toFixed(2)}`}
+                <Group justify="space-between" mb="xs">
+                  <Text size="sm" c="dimmed">Subtotal</Text>
+                  <Text fw={600}>${subtotal.toFixed(2)}</Text>
+                </Group>
+                <Group justify="space-between" mb="xs">
+                  <Text size="sm" c="dimmed">Fees</Text>
+                  <Text fw={600}>${fees.toFixed(2)}</Text>
+                </Group>
+
+                <Divider my="sm" />
+
+                <Group justify="space-between" mb="lg">
+                  <Text fw={700} size="lg">Total</Text>
+                  <Text fw={700} size="lg" c="blue">${total.toFixed(2)}</Text>
+                </Group>
+
+                <Button fullWidth size="lg" disabled={event.status === 'sold-out'}>
+                  {event.status === 'sold-out' ? 'Sold Out' : `Book Now — $${total.toFixed(2)}`}
                 </Button>
               </Card>
 
-              <Card className="p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-secondary-100 dark:bg-secondary-900/40 text-secondary-600 dark:text-secondary-400">
-                  <Users className="w-5 h-5" />
-                </div>
+              <Card withBorder padding="md" radius="md" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <IconUsers size={24} color="var(--mantine-color-blue-6)" />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Event Capacity</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.status === 'sold-out' ? 'Full' : 'Spots Available'}</p>
+                  <Text size="xs" c="dimmed" tt="uppercase">Event Capacity</Text>
+                  <Text fw={600}>{event.status === 'sold-out' ? 'Full' : 'Spots Available'}</Text>
                 </div>
               </Card>
-            </div>
+            </Stack>
           </motion.div>
-        </div>
+        </Grid.Col>
+      </Grid>
 
-        {related.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-14"
-          >
-            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6">Related Events</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {related.map((rel) => (
-                <div
-                  key={rel.id}
-                  onClick={() => navigate(`/events/${rel.id}`)}
-                  className="cursor-pointer group"
-                >
-                  <Card className="overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 transition-all duration-300">
-                    <div className="h-40 bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center">
-                      <Calendar className="w-10 h-10 text-white/60" />
-                    </div>
-                    <div className="p-4">
-                      <Badge className="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-2.5 py-0.5 rounded-full text-xs font-medium mb-2 inline-block">
-                        {rel.category}
-                      </Badge>
-                      <h3 className="font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                        {rel.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {new Date(rel.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </div>
-    </div>
+      {related.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Title order={2} mt="xl" mb="md">Related Events</Title>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+            {related.map((rel) => (
+              <Card
+                key={rel.id}
+                shadow="sm"
+                radius="md"
+                withBorder
+                component={Link}
+                to={`/events/${rel.id}`}
+                style={{ cursor: 'pointer', textDecoration: 'none' }}
+              >
+                <Card.Section style={{ height: 160, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconCalendar size={40} color="rgba(255,255,255,0.6)" />
+                </Card.Section>
+                <Group gap="xs" mt="md">
+                  <Badge variant="light" color="blue" size="sm">{rel.category}</Badge>
+                </Group>
+                <Text fw={600} mt="xs">{rel.title}</Text>
+                <Group gap="xs" mt="xs">
+                  <IconCalendar size={14} />
+                  <Text size="sm" c="dimmed">{dayjs(rel.date).format('MMM D, YYYY')}</Text>
+                </Group>
+              </Card>
+            ))}
+          </SimpleGrid>
+        </motion.div>
+      )}
+    </Container>
   )
 }

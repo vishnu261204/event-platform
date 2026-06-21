@@ -1,15 +1,16 @@
 import { Outlet } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+import { AppShell } from '@mantine/core';
+import HeaderNav from '../components/layout/HeaderNav';
+import FooterSection from '../components/layout/Footer';
 
 export default function PublicLayout() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <main className="flex-1">
+    <AppShell header={{ height: 60 }} padding={0}>
+      <HeaderNav />
+      <AppShell.Main>
         <Outlet />
-      </main>
-      <Footer />
-    </div>
+        <FooterSection />
+      </AppShell.Main>
+    </AppShell>
   );
 }

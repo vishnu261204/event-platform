@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { AppShell, Burger, Group, ActionIcon, useMantineColorScheme, useComputedColorScheme } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
-import Sidebar from '../components/layout/Sidebar';
-import Navbar from '../components/layout/Navbar';
+import { IconSun, IconMoon } from '@tabler/icons-react';
+import SidebarNav from '../components/layout/SidebarNav';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -11,36 +11,50 @@ const pageVariants = {
 };
 
 export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
+  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
   const location = useLocation();
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme('light');
 
   return (
-    <div className="flex min-h-screen bg-secondary-50 dark:bg-secondary-900">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <AppShell
+      header={{ height: 60 }}
+      navbar={{
+        width: 260,
+        breakpoint: 'sm',
+        collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
+      }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Group h="100%" px="md" justify="space-between">
+          <Group>
+            <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
+            <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" />
+          </Group>
+          <Group>
+            <ActionIcon variant="subtle" onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')} size="lg">
+              {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
+            </ActionIcon>
+          </Group>
+        </Group>
+      </AppShell.Header>
 
-      <div className="flex flex-1 flex-col lg:pl-64">
-        <div className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-secondary-200/50 bg-white/80 px-4 backdrop-blur-xl dark:bg-secondary-900/80 dark:border-secondary-700/50">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="rounded-lg p-2 text-secondary-500 transition-colors hover:bg-secondary-100 dark:hover:bg-secondary-800 lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="flex-1" />
-          <Navbar />
-        </div>
+      <AppShell.Navbar p="xs">
+        <SidebarNav />
+      </AppShell.Navbar>
 
-        <main className="flex-1 p-6">
-          <motion.div
-            key={location.pathname}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-          >
-            <Outlet />
-          </motion.div>
-        </main>
-      </div>
-    </div>
+      <AppShell.Main bg="var(--mantine-color-gray-0)">
+        <motion.div
+          key={location.pathname}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+        >
+          <Outlet />
+        </motion.div>
+      </AppShell.Main>
+    </AppShell>
   );
 }

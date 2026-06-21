@@ -1,73 +1,73 @@
+import { Container, Group, Text, Stack, Anchor, Divider } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { Ticket, Mail, MapPin } from 'lucide-react';
+import { IconTicket, IconMail } from '@tabler/icons-react';
 
-const footerLinks = {
+const footerData = {
   Platform: [
-    { label: 'Events', href: '/events' },
-    { label: 'Create Event', href: '/register' },
-    { label: 'Pricing', href: '#' },
-    { label: 'FAQ', href: '#' },
+    { label: 'Events', to: '/events' },
+    { label: 'Create Event', to: '/register' },
+    { label: 'Pricing', to: '#' },
+    { label: 'FAQ', to: '#' },
   ],
   Company: [
-    { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Contact', href: '#' },
+    { label: 'About', to: '#' },
+    { label: 'Blog', to: '#' },
+    { label: 'Careers', to: '#' },
+    { label: 'Contact', to: '#' },
   ],
   Support: [
-    { label: 'Help Center', href: '#' },
-    { label: 'Terms of Service', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Cookie Policy', href: '#' },
+    { label: 'Help Center', to: '#' },
+    { label: 'Terms of Service', to: '#' },
+    { label: 'Privacy Policy', to: '#' },
+    { label: 'Cookie Policy', to: '#' },
   ],
 };
 
-export default function Footer() {
+export default function FooterSection() {
   return (
-    <footer className="border-t border-secondary-200 bg-white dark:bg-secondary-900 dark:border-secondary-800">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="py-12 lg:py-16">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <div className="col-span-2 md:col-span-1">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-violet-600">
-                  <Ticket className="h-4 w-4 text-white" />
-                </div>
-                <span className="text-lg font-bold text-secondary-900 dark:text-secondary-100">EventHub</span>
-              </Link>
-              <p className="mt-3 text-sm text-secondary-500 dark:text-secondary-400 max-w-xs">
-                The premier platform for discovering, creating, and managing unforgettable events.
-              </p>
-              <div className="mt-4 flex items-center gap-3 text-secondary-400">
-                <Mail className="h-4 w-4" />
-                <span className="text-sm">hello@eventhub.com</span>
+    <footer style={{ borderTop: '1px solid var(--mantine-color-gray-2)' }}>
+      <Container size="xl" py="xl">
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 32, marginBottom: 32,
+        }}>
+          <div>
+            <Group gap="xs" mb="sm">
+              <div style={{
+                width: 28, height: 28, borderRadius: 6,
+                background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <IconTicket size={16} color="white" />
               </div>
-            </div>
-            {Object.entries(footerLinks).map(([title, links]) => (
-              <div key={title}>
-                <h3 className="text-sm font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>
-                <ul className="mt-3 space-y-2.5">
-                  {links.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        to={link.href}
-                        className="text-sm text-secondary-500 transition-colors hover:text-primary-600 dark:text-secondary-400 dark:hover:text-primary-400"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              <Text fw={700}>EventHub</Text>
+            </Group>
+            <Text size="sm" c="dimmed" maw={240}>
+              The premier platform for discovering, creating, and managing unforgettable events.
+            </Text>
+            <Group gap="xs" mt="sm">
+              <IconMail size={14} />
+              <Text size="sm" c="dimmed">hello@eventhub.com</Text>
+            </Group>
           </div>
+          {Object.entries(footerData).map(([title, links]) => (
+            <div key={title}>
+              <Text fw={600} size="sm" mb="xs">{title}</Text>
+              <Stack gap={6}>
+                {links.map((l) => (
+                  <Anchor key={l.label} component={Link} to={l.to} size="sm" c="dimmed">
+                    {l.label}
+                  </Anchor>
+                ))}
+              </Stack>
+            </div>
+          ))}
         </div>
-        <div className="border-t border-secondary-200 py-6 dark:border-secondary-800">
-          <p className="text-center text-sm text-secondary-400">
-            &copy; {new Date().getFullYear()} EventHub. All rights reserved.
-          </p>
-        </div>
-      </div>
+        <Divider />
+        <Text ta="center" size="sm" c="dimmed" pt="md">
+          &copy; {new Date().getFullYear()} EventHub. All rights reserved.
+        </Text>
+      </Container>
     </footer>
   );
 }

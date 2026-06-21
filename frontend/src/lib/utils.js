@@ -3,10 +3,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-export function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
 export function formatDate(date, format = 'MMM D, YYYY') {
   if (!date) return '';
   return dayjs(date).format(format);
@@ -48,18 +44,18 @@ export function getInitials(name) {
 
 export function getStatusColor(status) {
   const map = {
-    pending: 'warning',
-    confirmed: 'success',
-    cancelled: 'danger',
-    completed: 'success',
-    active: 'success',
-    inactive: 'danger',
-    draft: 'warning',
-    published: 'success',
-    sold_out: 'danger',
-    cancelled: 'danger',
+    pending: 'orange',
+    confirmed: 'green',
+    cancelled: 'red',
+    completed: 'green',
+    active: 'green',
+    inactive: 'red',
+    draft: 'orange',
+    published: 'green',
+    sold_out: 'red',
+    'checked-in': 'teal',
   };
-  return map[status?.toLowerCase()] || 'secondary';
+  return map[status?.toLowerCase()] || 'gray';
 }
 
 export function getStatusLabel(status) {
