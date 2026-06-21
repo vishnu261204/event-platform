@@ -1,0 +1,6 @@
+node_modules/
+.env
+uploads/events/*
+uploads/qrcodes/*
+!uploads/events/.gitkeep
+!uploads/qrcodes/.gitkeep
