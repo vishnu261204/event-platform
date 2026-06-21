@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput, Skeleton, Modal, Stack, Button, ActionIcon, Tooltip } from '@mantine/core';
+import { Box, Card, Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput, Skeleton, Modal, Stack, Button, ActionIcon, Tooltip, Divider } from '@mantine/core';
 import { IconSearch, IconEye, IconTrash, IconRotate } from '@tabler/icons-react';
 import { formatDate, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { adminAPI } from '../../services/api';
@@ -55,57 +55,95 @@ export default function Users() {
             {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={48} radius="sm" />)}
           </Stack>
         ) : (
-          <ScrollArea>
-            <Table striped highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Email</Table.Th>
-                  <Table.Th>Role</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Joined</Table.Th>
-                  <Table.Th>Actions</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filtered.length === 0 ? (
-                  <Table.Tr><Table.Td colSpan={6}><Text ta="center" c="dimmed" py="xl">No users found</Text></Table.Td></Table.Tr>
-                ) : filtered.map((user) => (
-                  <Table.Tr key={user._id}>
-                    <Table.Td>
-                      <Text fw={500}>{user.name}</Text>
-                    </Table.Td>
-                    <Table.Td>{user.email}</Table.Td>
-                    <Table.Td>
-                      <Badge variant="light" color={user.role === 'admin' ? 'red' : user.role === 'organizer' ? 'violet' : 'blue'}>
-                        {user.role}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge color={getStatusColor(user.isActive ? 'active' : 'inactive')} size="sm">
-                        {getStatusLabel(user.isActive ? 'active' : 'inactive')}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>{formatDate(user.createdAt)}</Table.Td>
-                    <Table.Td>
-                      <Group gap="xs">
-                        <Tooltip label="View details">
-                          <ActionIcon variant="subtle" color="blue" onClick={() => setViewUser(user)}>
-                            <IconEye size={18} />
-                          </ActionIcon>
-                        </Tooltip>
-                        <Tooltip label={user.isActive ? 'Deactivate user' : 'Activate user'}>
-                          <ActionIcon variant="subtle" color={user.isActive ? 'red' : 'green'} onClick={() => handleToggleStatus(user._id)}>
-                            {user.isActive ? <IconTrash size={18} /> : <IconRotate size={18} />}
-                          </ActionIcon>
-                        </Tooltip>
+          <>
+            <Box visibleFrom="sm">
+              <ScrollArea>
+                <Table striped highlightOnHover>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Name</Table.Th>
+                      <Table.Th>Email</Table.Th>
+                      <Table.Th>Role</Table.Th>
+                      <Table.Th>Status</Table.Th>
+                      <Table.Th>Joined</Table.Th>
+                      <Table.Th>Actions</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {filtered.length === 0 ? (
+                      <Table.Tr><Table.Td colSpan={6}><Text ta="center" c="dimmed" py="xl">No users found</Text></Table.Td></Table.Tr>
+                    ) : filtered.map((user) => (
+                      <Table.Tr key={user._id}>
+                        <Table.Td>
+                          <Text fw={500}>{user.name}</Text>
+                        </Table.Td>
+                        <Table.Td>{user.email}</Table.Td>
+                        <Table.Td>
+                          <Badge variant="light" color={user.role === 'admin' ? 'red' : user.role === 'organizer' ? 'violet' : 'blue'}>
+                            {user.role}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td>
+                          <Badge color={getStatusColor(user.isActive ? 'active' : 'inactive')} size="sm">
+                            {getStatusLabel(user.isActive ? 'active' : 'inactive')}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td>{formatDate(user.createdAt)}</Table.Td>
+                        <Table.Td>
+                          <Group gap="xs">
+                            <Tooltip label="View details">
+                              <ActionIcon variant="subtle" color="blue" onClick={() => setViewUser(user)}>
+                                <IconEye size={18} />
+                              </ActionIcon>
+                            </Tooltip>
+                            <Tooltip label={user.isActive ? 'Deactivate user' : 'Activate user'}>
+                              <ActionIcon variant="subtle" color={user.isActive ? 'red' : 'green'} onClick={() => handleToggleStatus(user._id)}>
+                                {user.isActive ? <IconTrash size={18} /> : <IconRotate size={18} />}
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+              </ScrollArea>
+            </Box>
+            <Box hiddenFrom="sm">
+              {filtered.length === 0 ? (
+                <Text ta="center" c="dimmed" py="xl">No users found</Text>
+              ) : (
+                <Stack gap="sm">
+                  {filtered.map((user) => (
+                    <Card key={user._id} withBorder padding="sm" radius="md">
+                      <Group justify="space-between" mb={4}>
+                        <Text fw={600} size="sm">{user.name}</Text>
+                        <Badge variant="light" color={user.role === 'admin' ? 'red' : user.role === 'organizer' ? 'violet' : 'blue'} size="sm">
+                          {user.role}
+                        </Badge>
                       </Group>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
-          </ScrollArea>
+                      <Text size="xs" c="dimmed" mb="xs">{user.email}</Text>
+                      <Group justify="space-between">
+                        <Badge color={getStatusColor(user.isActive ? 'active' : 'inactive')} size="sm">
+                          {getStatusLabel(user.isActive ? 'active' : 'inactive')}
+                        </Badge>
+                        <Text size="xs" c="dimmed">{formatDate(user.createdAt)}</Text>
+                      </Group>
+                      <Divider my="sm" />
+                      <Group justify="flex-end" gap="xs">
+                        <Button size="xs" variant="light" leftSection={<IconEye size={14} />} onClick={() => setViewUser(user)}>
+                          View
+                        </Button>
+                        <Button size="xs" variant="light" color={user.isActive ? 'red' : 'green'} leftSection={user.isActive ? <IconTrash size={14} /> : <IconRotate size={14} />} onClick={() => handleToggleStatus(user._id)}>
+                          {user.isActive ? 'Deactivate' : 'Activate'}
+                        </Button>
+                      </Group>
+                    </Card>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+          </>
         )}
       </Paper>
 

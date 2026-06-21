@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Title, Text, Group, Table, Badge, TextInput, Tabs, Paper, ScrollArea, Skeleton, Stack } from '@mantine/core';
+import { Box, Card, Title, Text, Group, Table, Badge, TextInput, Tabs, Paper, ScrollArea, Skeleton, Stack, Divider } from '@mantine/core';
 import { IconSearch, IconTicket } from '@tabler/icons-react';
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { eventAPI, bookingAPI } from '../../services/api';
@@ -86,21 +86,44 @@ export default function EventBookings() {
             <Text c="dimmed">No bookings found</Text>
           </Stack>
         ) : (
-          <ScrollArea>
-            <Table striped highlightOnHover p="md">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Booking ID</Table.Th>
-                  <Table.Th>Customer</Table.Th>
-                  <Table.Th>Tickets</Table.Th>
-                  <Table.Th>Total</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Date</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </ScrollArea>
+          <>
+            <Box visibleFrom="sm">
+              <ScrollArea>
+                <Table striped highlightOnHover p="md">
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Booking ID</Table.Th>
+                      <Table.Th>Customer</Table.Th>
+                      <Table.Th>Tickets</Table.Th>
+                      <Table.Th>Total</Table.Th>
+                      <Table.Th>Status</Table.Th>
+                      <Table.Th>Date</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{rows}</Table.Tbody>
+                </Table>
+              </ScrollArea>
+            </Box>
+            <Box hiddenFrom="sm">
+              <Stack gap="sm" p="md">
+                {filtered.map((b) => (
+                  <Card key={b._id} withBorder padding="sm" radius="md">
+                    <Group justify="space-between" mb={4}>
+                      <Text size="xs" ff="mono" fw={600}>{b.bookingId || b._id.slice(-8).toUpperCase()}</Text>
+                      <Badge color={getStatusColor(b.bookingStatus)} variant="light" size="sm">{getStatusLabel(b.bookingStatus)}</Badge>
+                    </Group>
+                    <Text size="sm" fw={500}>{b.userId?.name || 'N/A'}</Text>
+                    <Divider my="sm" />
+                    <Group justify="space-between">
+                      <Text size="xs" c="dimmed">{b.quantity} ticket(s)</Text>
+                      <Text size="sm" fw={600}>{formatCurrency((b.eventId?.price || 0) * b.quantity)}</Text>
+                    </Group>
+                    <Text size="xs" c="dimmed" mt={4}>{formatDate(b.createdAt)}</Text>
+                  </Card>
+                ))}
+              </Stack>
+            </Box>
+          </>
         )}
       </Paper>
     </motion.div>

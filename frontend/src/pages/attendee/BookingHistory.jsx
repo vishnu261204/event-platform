@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Title, Text, Badge, Table, ScrollArea, TextInput, Paper, Skeleton, Stack } from '@mantine/core';
+import { Box, Card, Title, Text, Badge, Table, ScrollArea, TextInput, Paper, Skeleton, Stack, Divider } from '@mantine/core';
 import { IconSearch, IconTicket } from '@tabler/icons-react';
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { bookingAPI } from '../../services/api';
@@ -69,34 +69,66 @@ export default function BookingHistory() {
               {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={48} radius="sm" />)}
             </Stack>
           ) : (
-            <ScrollArea>
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Event</Table.Th>
-                    <Table.Th>Date</Table.Th>
-                    <Table.Th>Tickets</Table.Th>
-                    <Table.Th>Total</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                    <Table.Th>Booked On</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {rows.length > 0 ? rows : (
-                    <Table.Tr>
-                      <Table.Td colSpan={6}>
-                        <Stack align="center" py="xl">
-                          <IconTicket size={48} color="var(--mantine-color-gray-4)" />
-                          <Text ta="center" c="dimmed">
-                            {search ? 'No bookings match your search' : 'No bookings yet'}
-                          </Text>
-                        </Stack>
-                      </Table.Td>
-                    </Table.Tr>
-                  )}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
+            <>
+              <Box visibleFrom="sm">
+                <ScrollArea>
+                  <Table striped highlightOnHover>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Event</Table.Th>
+                        <Table.Th>Date</Table.Th>
+                        <Table.Th>Tickets</Table.Th>
+                        <Table.Th>Total</Table.Th>
+                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Booked On</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {rows.length > 0 ? rows : (
+                        <Table.Tr>
+                          <Table.Td colSpan={6}>
+                            <Stack align="center" py="xl">
+                              <IconTicket size={48} color="var(--mantine-color-gray-4)" />
+                              <Text ta="center" c="dimmed">
+                                {search ? 'No bookings match your search' : 'No bookings yet'}
+                              </Text>
+                            </Stack>
+                          </Table.Td>
+                        </Table.Tr>
+                      )}
+                    </Table.Tbody>
+                  </Table>
+                </ScrollArea>
+              </Box>
+              <Box hiddenFrom="sm">
+                {filtered.length === 0 ? (
+                  <Stack align="center" py="xl">
+                    <IconTicket size={48} color="var(--mantine-color-gray-4)" />
+                    <Text ta="center" c="dimmed">{search ? 'No bookings match your search' : 'No bookings yet'}</Text>
+                  </Stack>
+                ) : (
+                  <Stack gap="sm" p="xs">
+                    {filtered.map((booking) => (
+                      <Card key={booking._id} withBorder padding="sm" radius="md">
+                        <Text fw={600} size="sm" lineClamp={1} mb={4}>{booking.eventId?.title || 'N/A'}</Text>
+                        <Group justify="space-between" mb={4}>
+                          <Text size="xs" c="dimmed">{formatDate(booking.eventId?.date)}</Text>
+                          <Badge color={getStatusColor(booking.bookingStatus)} variant="light" size="sm">
+                            {getStatusLabel(booking.bookingStatus)}
+                          </Badge>
+                        </Group>
+                        <Divider my="sm" />
+                        <Group justify="space-between">
+                          <Text size="xs" c="dimmed">{booking.quantity} ticket(s)</Text>
+                          <Text size="sm" fw={600}>{formatCurrency((booking.eventId?.price || 0) * booking.quantity)}</Text>
+                        </Group>
+                        <Text size="xs" c="dimmed" mt={4}>Booked on {formatDate(booking.createdAt)}</Text>
+                      </Card>
+                    ))}
+                  </Stack>
+                )}
+              </Box>
+            </>
           )}
         </Paper>
       </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Paper, Title, Text, Group, SimpleGrid, Card, Badge, Table, ScrollArea, ThemeIcon, Skeleton, Stack } from '@mantine/core';
+import { Box, Paper, Title, Text, Group, SimpleGrid, Card, Badge, Table, ScrollArea, ThemeIcon, Skeleton, Stack, Divider } from '@mantine/core';
 import { IconCalendarEvent, IconTicket } from '@tabler/icons-react';
 import { formatDate, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { eventAPI, bookingAPI } from '../../services/api';
@@ -91,36 +91,56 @@ export default function Dashboard() {
           {events.length === 0 ? (
             <Text c="dimmed" ta="center" py="xl">No events yet. Create your first event!</Text>
           ) : (
-            <ScrollArea>
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Title</Table.Th>
-                    <Table.Th>Date</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                    <Table.Th>Sold</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
+            <>
+              <Box visibleFrom="sm">
+                <ScrollArea>
+                  <Table striped highlightOnHover>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Title</Table.Th>
+                        <Table.Th>Date</Table.Th>
+                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Sold</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {events.map((e) => (
+                        <Table.Tr key={e._id}>
+                          <Table.Td>
+                            <Text size="sm" fw={500}>{e.title}</Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="sm" c="dimmed">{formatDate(e.date)}</Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Badge color={getStatusColor(e.status)} variant="light" size="sm">{getStatusLabel(e.status)}</Badge>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="sm">{((e.totalSeats || 0) - (e.availableSeats || 0))} / {e.totalSeats}</Text>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </ScrollArea>
+              </Box>
+              <Box hiddenFrom="sm">
+                <Stack gap="sm">
                   {events.map((e) => (
-                    <Table.Tr key={e._id}>
-                      <Table.Td>
-                        <Text size="sm" fw={500}>{e.title}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm" c="dimmed">{formatDate(e.date)}</Text>
-                      </Table.Td>
-                      <Table.Td>
+                    <Card key={e._id} withBorder padding="sm" radius="md">
+                      <Group justify="space-between" mb={4}>
+                        <Text size="sm" fw={600} lineClamp={1}>{e.title}</Text>
                         <Badge color={getStatusColor(e.status)} variant="light" size="sm">{getStatusLabel(e.status)}</Badge>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm">{((e.totalSeats || 0) - (e.availableSeats || 0))} / {e.totalSeats}</Text>
-                      </Table.Td>
-                    </Table.Tr>
+                      </Group>
+                      <Group justify="space-between">
+                        <Text size="xs" c="dimmed">{formatDate(e.date)}</Text>
+                        <Text size="xs">Sold: {((e.totalSeats || 0) - (e.availableSeats || 0))} / {e.totalSeats}</Text>
+                      </Group>
+                    </Card>
                   ))}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
+                </Stack>
+              </Box>
+            </>
           )}
         </Card>
 
@@ -129,34 +149,53 @@ export default function Dashboard() {
           {bookings.length === 0 ? (
             <Text c="dimmed" ta="center" py="xl">No bookings yet</Text>
           ) : (
-            <ScrollArea>
-              <Table striped highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>Customer</Table.Th>
-                    <Table.Th>Event</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
+            <>
+              <Box visibleFrom="sm">
+                <ScrollArea>
+                  <Table striped highlightOnHover>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Customer</Table.Th>
+                        <Table.Th>Event</Table.Th>
+                        <Table.Th>Status</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {bookings.slice(0, 10).map((b) => (
+                        <Table.Tr key={b._id}>
+                          <Table.Td>
+                            <Text size="sm" fw={500}>{b.userId?.name || 'N/A'}</Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Text size="sm">{b.eventId?.title || 'N/A'}</Text>
+                          </Table.Td>
+                          <Table.Td>
+                            <Badge color={getStatusColor(b.bookingStatus)} variant="light" size="sm">
+                              {getStatusLabel(b.bookingStatus)}
+                            </Badge>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </ScrollArea>
+              </Box>
+              <Box hiddenFrom="sm">
+                <Stack gap="sm">
                   {bookings.slice(0, 10).map((b) => (
-                    <Table.Tr key={b._id}>
-                      <Table.Td>
-                        <Text size="sm" fw={500}>{b.userId?.name || 'N/A'}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm">{b.eventId?.title || 'N/A'}</Text>
-                      </Table.Td>
-                      <Table.Td>
+                    <Card key={b._id} withBorder padding="sm" radius="md">
+                      <Group justify="space-between" mb={4}>
+                        <Text size="sm" fw={500} lineClamp={1}>{b.userId?.name || 'N/A'}</Text>
                         <Badge color={getStatusColor(b.bookingStatus)} variant="light" size="sm">
                           {getStatusLabel(b.bookingStatus)}
                         </Badge>
-                      </Table.Td>
-                    </Table.Tr>
+                      </Group>
+                      <Text size="xs" c="dimmed">{b.eventId?.title || 'N/A'}</Text>
+                    </Card>
                   ))}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
+                </Stack>
+              </Box>
+            </>
           )}
         </Card>
       </SimpleGrid>
