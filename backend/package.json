@@ -1,6 +1,7 @@
 {
   "name": "event-platform-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "Event Management & Ticket Booking Platform API",
   "main": "src/server.js",
   "scripts": {

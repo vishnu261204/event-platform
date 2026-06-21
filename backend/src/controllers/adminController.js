@@ -1,11 +1,11 @@
-const User = require('../models/User');
-const Event = require('../models/Event');
-const Booking = require('../models/Booking');
-const ApiResponse = require('../utils/ApiResponse');
-const ApiError = require('../utils/ApiError');
-const asyncHandler = require('../utils/asyncHandler');
+import User from '../models/User.js';
+import Event from '../models/Event.js';
+import Booking from '../models/Booking.js';
+import ApiResponse from '../utils/ApiResponse.js';
+import ApiError from '../utils/ApiError.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
-exports.toggleUserStatus = asyncHandler(async (req, res) => {
+export const toggleUserStatus = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) throw ApiError.notFound('User not found');
   user.isActive = !user.isActive;
@@ -13,7 +13,7 @@ exports.toggleUserStatus = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { user }, `User ${user.isActive ? 'activated' : 'deactivated'}`);
 });
 
-exports.getDashboard = asyncHandler(async (req, res) => {
+export const getDashboard = asyncHandler(async (req, res) => {
   const [totalUsers, totalEvents, totalBookings] = await Promise.all([
     User.countDocuments(),
     Event.countDocuments({ status: 'active' }),
@@ -23,7 +23,7 @@ exports.getDashboard = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { totalUsers, totalEvents, totalBookings });
 });
 
-exports.getUsers = asyncHandler(async (req, res) => {
+export const getUsers = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, role } = req.query;
   const query = {};
   if (role) query.role = role;
@@ -33,7 +33,7 @@ exports.getUsers = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { users, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
 });
 
-exports.getEvents = asyncHandler(async (req, res) => {
+export const getEvents = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, status } = req.query;
   const query = {};
   if (status) query.status = status;
@@ -43,7 +43,7 @@ exports.getEvents = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { events, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
 });
 
-exports.getBookings = asyncHandler(async (req, res) => {
+export const getBookings = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, status } = req.query;
   const query = {};
   if (status) query.bookingStatus = status;

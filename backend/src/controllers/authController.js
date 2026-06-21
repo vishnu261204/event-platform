@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const ApiResponse = require('../utils/ApiResponse');
-const ApiError = require('../utils/ApiError');
-const asyncHandler = require('../utils/asyncHandler');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import ApiResponse from '../utils/ApiResponse.js';
+import ApiError from '../utils/ApiError.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -10,7 +10,7 @@ const generateToken = (userId) => {
   });
 };
 
-exports.register = asyncHandler(async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
   const existing = await User.findOne({ email });
@@ -33,7 +33,7 @@ exports.register = asyncHandler(async (req, res) => {
   }, 'Registration successful');
 });
 
-exports.login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select('+password');
@@ -58,11 +58,11 @@ exports.login = asyncHandler(async (req, res) => {
   }, 'Login successful');
 });
 
-exports.getProfile = asyncHandler(async (req, res) => {
+export const getProfile = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { user: req.user });
 });
 
-exports.updateProfile = asyncHandler(async (req, res) => {
+export const updateProfile = asyncHandler(async (req, res) => {
   const { name, avatar } = req.body;
 
   const user = await User.findByIdAndUpdate(
@@ -74,7 +74,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { user }, 'Profile updated');
 });
 
-exports.changePassword = asyncHandler(async (req, res) => {
+export const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   const user = await User.findById(req.user._id).select('+password');

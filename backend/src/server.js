@@ -1,8 +1,14 @@
-require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const app = require('./app');
-const connectDB = require('./config/database');
-const mongoose = require('mongoose');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
+import app from './app.js';
+import connectDB from './config/database.js';
+import mongoose from 'mongoose';
 
 const PORT = process.env.PORT || 5000;
 

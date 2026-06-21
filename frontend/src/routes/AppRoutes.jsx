@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PublicLayout from '../layouts/PublicLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { AdminRoute, OrganizerRoute, AttendeeRoute } from './ProtectedRoute';
+import ProtectedRoute, { AdminRoute, OrganizerRoute, AttendeeRoute } from './ProtectedRoute';
 
 import Events from '../pages/Events';
 import EventDetails from '../pages/EventDetails';
@@ -42,7 +42,7 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
         <Route path="/my-bookings" element={<AttendeeRoute><BookingHistory /></AttendeeRoute>} />
-        <Route path="/profile" element={<AttendeeRoute><Profile /></AttendeeRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Route>
 
       <Route element={<AdminRoute><DashboardLayout /></AdminRoute>}>

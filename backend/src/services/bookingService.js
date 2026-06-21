@@ -1,7 +1,7 @@
-const Booking = require('../models/Booking');
-const Event = require('../models/Event');
-const Counter = require('../models/Counter');
-const ApiError = require('../utils/ApiError');
+import Booking from '../models/Booking.js';
+import Event from '../models/Event.js';
+import Counter from '../models/Counter.js';
+import ApiError from '../utils/ApiError.js';
 
 async function getNextBookingId() {
   const counter = await Counter.findOneAndUpdate(
@@ -76,4 +76,4 @@ class BookingService {
   }
 }
 
-module.exports = new BookingService();
+export default new BookingService();

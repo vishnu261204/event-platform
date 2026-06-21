@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -43,4 +43,4 @@ const bookingSchema = new mongoose.Schema(
 bookingSchema.index({ userId: 1 });
 bookingSchema.index({ eventId: 1 });
 
-module.exports = mongoose.model('Booking', bookingSchema);
+export default mongoose.model('Booking', bookingSchema);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Container, Title, Text, Card, Badge, Button, Grid, SimpleGrid, Group, Stack, Divider, Breadcrumbs, Anchor, ActionIcon, Skeleton } from '@mantine/core'
-import { formatCurrency } from '../lib/utils'
+import { formatCurrency, getImageUrl } from '../lib/utils'
 import { IconCalendar, IconMapPin, IconClock, IconUsers, IconHeart, IconShare, IconMinus, IconPlus } from '@tabler/icons-react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -110,8 +110,14 @@ export default function EventDetails() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <Stack gap="lg">
               <Card padding={0} radius="md" withBorder style={{ overflow: 'hidden' }}>
-                <div style={{ position: 'relative', height: 320, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <IconCalendar size={64} color="rgba(255,255,255,0.4)" />
+                <div style={{ position: 'relative', height: 320, overflow: 'hidden' }}>
+                  {event.banner ? (
+                    <img src={getImageUrl(event.banner)} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ height: 320, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <IconCalendar size={64} color="rgba(255,255,255,0.4)" />
+                    </div>
+                  )}
                   <Group gap="xs" style={{ position: 'absolute', top: 16, right: 16 }}>
                     <ActionIcon variant={favorited ? 'filled' : 'default'} color={favorited ? 'red' : 'gray'} size="lg" radius="xl" onClick={() => setFavorited(!favorited)}><IconHeart size={20} /></ActionIcon>
                     <ActionIcon variant="default" size="lg" radius="xl"><IconShare size={20} /></ActionIcon>

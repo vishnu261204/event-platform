@@ -1,7 +1,11 @@
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const ApiError = require('../utils/ApiError');
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import ApiError from '../utils/ApiError.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const createUploader = (subFolder, allowedTypes = /jpeg|jpg|png|webp/) => {
   const destPath = path.join(__dirname, '../../uploads', subFolder);
@@ -38,6 +42,4 @@ const createUploader = (subFolder, allowedTypes = /jpeg|jpg|png|webp/) => {
   });
 };
 
-const uploadEventBanner = createUploader('events').single('banner');
-
-module.exports = { uploadEventBanner };
+export const uploadEventBanner = createUploader('events').single('banner');

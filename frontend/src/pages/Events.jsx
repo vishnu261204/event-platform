@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Container, Title, Text, Card, Badge, Button, SimpleGrid, Group, Stack, TextInput, Skeleton } from '@mantine/core'
-import { formatCurrency } from '../lib/utils'
+import { Container, Title, Text, Card, Badge, Button, SimpleGrid, Group, Stack, TextInput, Skeleton, Image } from '@mantine/core'
+import { formatCurrency, getImageUrl } from '../lib/utils'
 import { IconSearch, IconCalendar, IconMapPin, IconX, IconTicket } from '@tabler/icons-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import dayjs from 'dayjs'
 import { eventAPI } from '../services/api'
 
-const categories = ['All', 'Music', 'Sports', 'Arts', 'Food', 'Tech', 'Business']
+const categories = ['All', 'Music', 'Sports', 'Arts', 'Food', 'Technology', 'Business']
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -91,8 +91,14 @@ export default function Events() {
               {events.map((event) => (
                 <motion.div key={event._id} variants={itemVariants}>
                   <Card shadow="sm" padding="lg" radius="md" withBorder style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <Card.Section style={{ position: 'relative', height: 192, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <IconCalendar size={48} color="rgba(255,255,255,0.6)" />
+                    <Card.Section style={{ position: 'relative', height: 192, overflow: 'hidden' }}>
+                      {event.banner ? (
+                        <Image src={getImageUrl(event.banner)} height={192} fit="cover" alt={event.title} />
+                      ) : (
+                        <div style={{ height: 192, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <IconCalendar size={48} color="rgba(255,255,255,0.6)" />
+                        </div>
+                      )}
                       <Badge
                         style={{ position: 'absolute', top: 12, left: 12 }}
                         size="lg"

@@ -1,6 +1,6 @@
-const { body } = require('express-validator');
+import { body } from 'express-validator';
 
-const createEventValidation = [
+export const createEventValidation = [
   body('title')
     .trim()
     .notEmpty().withMessage('Title is required')
@@ -29,7 +29,7 @@ const createEventValidation = [
     .isInt({ min: 1 }).withMessage('Total seats must be at least 1'),
 ];
 
-const updateEventValidation = [
+export const updateEventValidation = [
   body('title')
     .optional()
     .trim()
@@ -57,8 +57,3 @@ const updateEventValidation = [
     .optional()
     .isInt({ min: 1 }).withMessage('Total seats must be at least 1'),
 ];
-
-module.exports = {
-  createEventValidation,
-  updateEventValidation,
-};

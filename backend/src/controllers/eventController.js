@@ -1,9 +1,9 @@
-const Event = require('../models/Event');
-const ApiResponse = require('../utils/ApiResponse');
-const ApiError = require('../utils/ApiError');
-const asyncHandler = require('../utils/asyncHandler');
+import Event from '../models/Event.js';
+import ApiResponse from '../utils/ApiResponse.js';
+import ApiError from '../utils/ApiError.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
-exports.createEvent = asyncHandler(async (req, res) => {
+export const createEvent = asyncHandler(async (req, res) => {
   const { title, description, category, venue, date, time, price, totalSeats } = req.body;
 
   const event = await Event.create({
@@ -22,7 +22,7 @@ exports.createEvent = asyncHandler(async (req, res) => {
   ApiResponse.created(res, { event }, 'Event created');
 });
 
-exports.updateEvent = asyncHandler(async (req, res) => {
+export const updateEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
 
   if (!event) {
@@ -52,7 +52,7 @@ exports.updateEvent = asyncHandler(async (req, res) => {
   ApiResponse.success(res, { event: updated }, 'Event updated');
 });
 
-exports.deleteEvent = asyncHandler(async (req, res) => {
+export const deleteEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
 
   if (!event) {
@@ -69,12 +69,12 @@ exports.deleteEvent = asyncHandler(async (req, res) => {
   ApiResponse.success(res, null, 'Event cancelled');
 });
 
-exports.getMyEvents = asyncHandler(async (req, res) => {
+export const getMyEvents = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizerId: req.user._id }).sort({ createdAt: -1 });
   ApiResponse.success(res, { events });
 });
 
-exports.getAllEvents = asyncHandler(async (req, res) => {
+export const getAllEvents = asyncHandler(async (req, res) => {
   const { search, category, status, page = 1, limit = 12 } = req.query;
 
   const query = {};
@@ -109,7 +109,7 @@ exports.getAllEvents = asyncHandler(async (req, res) => {
   });
 });
 
-exports.getEventById = asyncHandler(async (req, res) => {
+export const getEventById = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id).populate('organizerId', 'name email');
 
   if (!event) {

@@ -1,14 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const eventController = require('../controllers/eventController');
-const auth = require('../middleware/auth');
-const authorize = require('../middleware/roles');
-const validate = require('../middleware/validation');
-const { uploadEventBanner } = require('../middleware/upload');
-const {
+import { Router } from 'express';
+const router = Router();
+import * as eventController from '../controllers/eventController.js';
+import auth from '../middleware/auth.js';
+import authorize from '../middleware/roles.js';
+import validate from '../middleware/validation.js';
+import { uploadEventBanner } from '../middleware/upload.js';
+import {
   createEventValidation,
   updateEventValidation,
-} = require('../validators/eventValidators');
+} from '../validators/eventValidators.js';
 
 router.get('/', eventController.getAllEvents);
 router.get('/my-events', auth, authorize('organizer', 'admin'), eventController.getMyEvents);
@@ -17,4 +17,4 @@ router.post('/', auth, authorize('organizer', 'admin'), uploadEventBanner, creat
 router.put('/:id', auth, authorize('organizer', 'admin'), uploadEventBanner, updateEventValidation, validate, eventController.updateEvent);
 router.delete('/:id', auth, authorize('organizer', 'admin'), eventController.deleteEvent);
 
-module.exports = router;
+export default router;

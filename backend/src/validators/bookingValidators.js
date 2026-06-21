@@ -1,6 +1,6 @@
-const { body } = require('express-validator');
+import { body } from 'express-validator';
 
-const createBookingValidation = [
+export const createBookingValidation = [
   body('eventId')
     .notEmpty().withMessage('Event ID is required')
     .isMongoId().withMessage('Invalid event ID'),
@@ -8,7 +8,3 @@ const createBookingValidation = [
     .notEmpty().withMessage('Quantity is required')
     .isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
 ];
-
-module.exports = {
-  createBookingValidation,
-};
