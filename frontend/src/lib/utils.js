@@ -3,7 +3,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 const API_BASE_URL = API_URL.replace('/api', '');
 
 export function getImageUrl(path) {
