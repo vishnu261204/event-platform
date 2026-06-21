@@ -81,14 +81,19 @@ export const changePassword = createAsyncThunk(
   }
 );
 
-const storedUser = localStorage.getItem('user');
+let parsedUser = null;
+try {
+  const raw = localStorage.getItem('user');
+  if (raw && raw !== 'undefined') parsedUser = JSON.parse(raw);
+} catch { parsedUser = null; }
+
 const storedToken = localStorage.getItem('token');
 
 const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
+  user: parsedUser,
   token: storedToken || null,
-  role: storedUser ? JSON.parse(storedUser).role : null,
-  isAuthenticated: !!storedToken,
+  role: parsedUser?.role || null,
+  isAuthenticated: !!storedToken && !!parsedUser,
   loading: false,
   error: null,
 };
