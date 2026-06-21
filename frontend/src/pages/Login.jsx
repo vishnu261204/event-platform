@@ -211,18 +211,7 @@ export default function Login() {
             ))}
           </Stack>
 
-          <div style={{ marginTop: 56, paddingTop: 24, borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb'}` }}>
-            <Text size="sm" c="dimmed" style={{ fontStyle: 'italic' }}>
-              "The best event platform we've used. Check-in was seamless."
-            </Text>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, fontWeight: 700 }}>SK</div>
-              <div>
-                <Text size="sm" fw={600}>Sarah Kim</Text>
-                <Text size="xs" c="dimmed">Event Organizer</Text>
-              </div>
-            </div>
-          </div>
+
         </motion.div>
       </div>
     </div>
