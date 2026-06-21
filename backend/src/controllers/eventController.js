@@ -1,7 +1,22 @@
 import Event from '../models/Event.js';
+import cloudinary from '../config/cloudinary.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
+
+function getBannerUrl(req) {
+  if (!req.file) return null;
+  if (req.file.path?.startsWith?.('http')) return req.file.path;
+  return `/uploads/events/${req.file.filename}`;
+}
+
+function getPublicId(url) {
+  if (!url || !url.includes('res.cloudinary.com')) return null;
+  const parts = url.split('/');
+  const uploadIdx = parts.indexOf('upload');
+  if (uploadIdx === -1) return null;
+  return parts.slice(uploadIdx + 2).join('/').replace(/\.[^.]+$/, '');
+}
 
 export const createEvent = asyncHandler(async (req, res) => {
   const { title, description, category, venue, date, time, price, totalSeats } = req.body;
@@ -16,7 +31,7 @@ export const createEvent = asyncHandler(async (req, res) => {
     price,
     totalSeats,
     organizerId: req.user._id,
-    banner: req.file ? `/uploads/events/${req.file.filename}` : null,
+    banner: getBannerUrl(req),
   });
 
   ApiResponse.created(res, { event }, 'Event created');
@@ -33,9 +48,16 @@ export const updateEvent = asyncHandler(async (req, res) => {
     throw ApiError.forbidden('Not authorized to update this event');
   }
 
+  if (req.file) {
+    const oldPublicId = getPublicId(event.banner);
+    if (oldPublicId) {
+      await cloudinary.uploader.destroy(oldPublicId).catch(() => {});
+    }
+  }
+
   const updates = { ...req.body };
   if (req.file) {
-    updates.banner = `/uploads/events/${req.file.filename}`;
+    updates.banner = getBannerUrl(req);
   }
 
   if (updates.totalSeats) {
@@ -61,6 +83,11 @@ export const deleteEvent = asyncHandler(async (req, res) => {
 
   if (event.organizerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
     throw ApiError.forbidden('Not authorized to delete this event');
+  }
+
+  const publicId = getPublicId(event.banner);
+  if (publicId) {
+    await cloudinary.uploader.destroy(publicId).catch(() => {});
   }
 
   event.status = 'cancelled';
