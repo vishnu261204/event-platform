@@ -1,40 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Title, Text, Group, Table, Badge, TextInput, Tabs, Paper, ScrollArea } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { Title, Text, Group, Table, Badge, TextInput, Tabs, Paper, ScrollArea, Skeleton, Stack } from '@mantine/core';
+import { IconSearch, IconTicket } from '@tabler/icons-react';
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
-
-const bookings = [
-  { id: 'BK-001', customer: 'Alice Johnson', tickets: 2, total: 120, status: 'confirmed', date: '2026-06-20', event: 'Music Festival' },
-  { id: 'BK-002', customer: 'Bob Smith', tickets: 1, total: 75, status: 'checked-in', date: '2026-06-19', event: 'Tech Conference' },
-  { id: 'BK-003', customer: 'Carol White', tickets: 3, total: 180, status: 'pending', date: '2026-06-18', event: 'Music Festival' },
-  { id: 'BK-004', customer: 'David Lee', tickets: 2, total: 150, status: 'confirmed', date: '2026-06-17', event: 'Art Workshop' },
-  { id: 'BK-005', customer: 'Eve Brown', tickets: 1, total: 50, status: 'cancelled', date: '2026-06-16', event: 'Tech Conference' },
-  { id: 'BK-006', customer: 'Frank Wilson', tickets: 4, total: 340, status: 'confirmed', date: '2026-06-15', event: 'Music Festival' },
-  { id: 'BK-007', customer: 'Grace Kim', tickets: 2, total: 100, status: 'checked-in', date: '2026-06-14', event: 'Business Networking' },
-];
-
-const events = ['All Events', 'Music Festival', 'Tech Conference', 'Art Workshop', 'Business Networking'];
+import { eventAPI, bookingAPI } from '../../services/api';
 
 export default function EventBookings() {
+  const [events, setEvents] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('All Events');
 
+  useEffect(() => {
+    setLoading(true);
+    eventAPI.getMyEvents()
+      .then(async (res) => {
+        const myEvents = res.data.data.events || [];
+        setEvents(myEvents);
+        const allBookings = [];
+        for (const evt of myEvents) {
+          try {
+            const bkRes = await bookingAPI.getEventBookings(evt._id);
+            const evtBookings = (bkRes.data.data.bookings || []).map((b) => ({ ...b, eventTitle: evt.title }));
+            allBookings.push(...evtBookings);
+          } catch {}
+        }
+        setBookings(allBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = bookings.filter((b) => {
     const q = search.toLowerCase();
-    const match = b.id.toLowerCase().includes(q) || b.customer.toLowerCase().includes(q);
-    if (activeTab !== 'All Events') return match && b.event === activeTab;
+    const match = (b._id?.toLowerCase().includes(q) || b.userId?.name?.toLowerCase().includes(q));
+    if (activeTab !== 'All Events') return match && b.eventTitle === activeTab;
     return match;
   });
 
+  const eventNames = ['All Events', ...events.map((e) => e.title)];
+
   const rows = filtered.map((b) => (
-    <Table.Tr key={b.id}>
-      <Table.Td><Text size="sm" ff="mono">{b.id}</Text></Table.Td>
-      <Table.Td><Text size="sm" fw={500}>{b.customer}</Text></Table.Td>
-      <Table.Td><Text size="sm">{b.tickets}</Text></Table.Td>
-      <Table.Td><Text size="sm">{formatCurrency(b.total)}</Text></Table.Td>
-      <Table.Td><Badge color={getStatusColor(b.status)} variant="light" size="sm">{getStatusLabel(b.status)}</Badge></Table.Td>
-      <Table.Td><Text size="sm" c="dimmed">{formatDate(b.date)}</Text></Table.Td>
+    <Table.Tr key={b._id}>
+      <Table.Td><Text size="sm" ff="mono">{b.bookingId || b._id.slice(-8).toUpperCase()}</Text></Table.Td>
+      <Table.Td><Text size="sm" fw={500}>{b.userId?.name || 'N/A'}</Text></Table.Td>
+      <Table.Td><Text size="sm">{b.quantity}</Text></Table.Td>
+      <Table.Td><Text size="sm">{formatCurrency((b.eventId?.price || 0) * b.quantity)}</Text></Table.Td>
+      <Table.Td><Badge color={getStatusColor(b.bookingStatus)} variant="light" size="sm">{getStatusLabel(b.bookingStatus)}</Badge></Table.Td>
+      <Table.Td><Text size="sm" c="dimmed">{formatDate(b.createdAt)}</Text></Table.Td>
     </Table.Tr>
   ));
 
@@ -46,7 +60,7 @@ export default function EventBookings() {
         <Tabs value={activeTab} onChange={setActiveTab}>
           <Group justify="space-between" p="md" pb={0}>
             <Tabs.List>
-              {events.map((e) => (
+              {eventNames.map((e) => (
                 <Tabs.Tab key={e} value={e}>{e}</Tabs.Tab>
               ))}
             </Tabs.List>
@@ -59,21 +73,32 @@ export default function EventBookings() {
           </Group>
         </Tabs>
 
-        <ScrollArea>
-          <Table striped highlightOnHover p="md">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Booking ID</Table.Th>
-                <Table.Th>Customer</Table.Th>
-                <Table.Th>Tickets</Table.Th>
-                <Table.Th>Total</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Date</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-        </ScrollArea>
+        {loading ? (
+          <Stack gap="xs" p="md">
+            {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={48} radius="sm" />)}
+          </Stack>
+        ) : rows.length === 0 ? (
+          <Stack align="center" py="xl">
+            <IconTicket size={48} color="var(--mantine-color-gray-4)" />
+            <Text c="dimmed">No bookings found</Text>
+          </Stack>
+        ) : (
+          <ScrollArea>
+            <Table striped highlightOnHover p="md">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Booking ID</Table.Th>
+                  <Table.Th>Customer</Table.Th>
+                  <Table.Th>Tickets</Table.Th>
+                  <Table.Th>Total</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Date</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </ScrollArea>
+        )}
       </Paper>
     </motion.div>
   );

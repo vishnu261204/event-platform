@@ -1,16 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { NavLink as MNavLink, Stack, Text } from '@mantine/core';
+import { AppShell, NavLink as MNavLink, Stack, Text } from '@mantine/core';
 import {
   IconLayoutDashboard, IconUsers, IconCalendarCheck, IconTicket,
-  IconCalendar, IconPlus, IconQrcode, IconClock, IconUser,
+  IconCalendar, IconPlus,
 } from '@tabler/icons-react';
 
 const configs = {
   admin: {
     label: 'Admin Panel',
     links: [
-      { label: 'Dashboard', to: '/dashboard', icon: IconLayoutDashboard },
+      { label: 'Dashboard', to: '/admin/dashboard', icon: IconLayoutDashboard },
       { label: 'Users', to: '/admin/users', icon: IconUsers },
       { label: 'Events', to: '/admin/events', icon: IconCalendarCheck },
       { label: 'Bookings', to: '/admin/bookings', icon: IconTicket },
@@ -19,19 +19,9 @@ const configs = {
   organizer: {
     label: 'Organizer',
     links: [
-      { label: 'Dashboard', to: '/dashboard', icon: IconLayoutDashboard },
+      { label: 'Dashboard', to: '/organizer/dashboard', icon: IconLayoutDashboard },
       { label: 'My Events', to: '/organizer/events', icon: IconCalendar },
-      { label: 'Create Event', to: '/organizer/events/new', icon: IconPlus },
-      { label: 'QR Check-In', to: '/organizer/checkin', icon: IconQrcode },
-    ],
-  },
-  attendee: {
-    label: 'My Account',
-    links: [
-      { label: 'Dashboard', to: '/dashboard', icon: IconLayoutDashboard },
-      { label: 'My Tickets', to: '/my-tickets', icon: IconTicket },
-      { label: 'Booking History', to: '/bookings', icon: IconClock },
-      { label: 'Profile', to: '/profile', icon: IconUser },
+      { label: 'Create Event', to: '/organizer/events/create', icon: IconPlus },
     ],
   },
 };
@@ -39,7 +29,9 @@ const configs = {
 export default function SidebarNav() {
   const { user } = useSelector((s) => s.auth);
   const location = useLocation();
-  const config = configs[user?.role] || configs.attendee;
+  const config = configs[user?.role];
+
+  if (!config) return null;
 
   return (
     <>
@@ -50,9 +42,9 @@ export default function SidebarNav() {
       </AppShell.Section>
       <AppShell.Section grow component={Stack} gap={2} px="sm" py="xs">
         {config.links.map((link) => {
-          const isActive = link.to === '/dashboard'
-            ? location.pathname === '/dashboard'
-            : location.pathname.startsWith(link.to);
+          const path = location.pathname;
+          const childPath = path.startsWith(link.to + '/') ? path.slice(link.to.length + 1) : '';
+          const isActive = path === link.to || (childPath && childPath !== 'create' && childPath !== 'create/');
           return (
             <MNavLink
               key={link.to}

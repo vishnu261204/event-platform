@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   TextInput, PasswordInput, Button, Anchor, Text, Container, Paper, Stack, Checkbox,
-  useMantineColorScheme, useComputedColorScheme, Tooltip,
+  useComputedColorScheme, Tooltip,
 } from '@mantine/core';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -98,7 +98,7 @@ export default function Register() {
         color: 'green',
         autoClose: 4000,
       });
-      const redirects = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/my-tickets' };
+      const redirects = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/' };
       navigate(redirects[result.user?.role] || '/');
     } catch (err) {
       notifications.show({
@@ -320,23 +320,6 @@ export default function Register() {
               </motion.div>
             ))}
           </Stack>
-
-          <div style={{ marginTop: 56, paddingTop: 24, borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb'}` }}>
-            <div style={{ display: 'flex', gap: 32 }}>
-              <div>
-                <Text size="28px" fw={800} style={{ background: 'linear-gradient(135deg, #6366f1, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>10K+</Text>
-                <Text size="sm" c="dimmed">Events hosted</Text>
-              </div>
-              <div>
-                <Text size="28px" fw={800} style={{ background: 'linear-gradient(135deg, #6366f1, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>50K+</Text>
-                <Text size="sm" c="dimmed">Active users</Text>
-              </div>
-              <div>
-                <Text size="28px" fw={800} style={{ background: 'linear-gradient(135deg, #6366f1, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>99%</Text>
-                <Text size="sm" c="dimmed">Satisfaction</Text>
-              </div>
-            </div>
-          </div>
         </motion.div>
       </div>
     </div>

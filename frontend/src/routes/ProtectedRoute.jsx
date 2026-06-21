@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children, roles }) {
     const redirectMap = {
       admin: '/admin/dashboard',
       organizer: '/organizer/dashboard',
-      attendee: '/my-tickets',
+      attendee: '/',
     };
     return <Navigate to={redirectMap[user?.role] || '/'} replace />;
   }

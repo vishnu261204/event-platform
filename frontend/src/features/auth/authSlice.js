@@ -45,7 +45,7 @@ export const getProfile = createAsyncThunk(
       return result.data;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data?.message || 'Failed to fetch profile'
+        err.response?.status || 'Failed to fetch profile'
       );
     }
   }
@@ -94,6 +94,7 @@ const initialState = {
   token: storedToken || null,
   role: parsedUser?.role || null,
   isAuthenticated: !!storedToken && !!parsedUser,
+  authInitialized: !storedToken,
   loading: false,
   error: null,
 };
@@ -107,6 +108,7 @@ const authSlice = createSlice({
       state.token = null;
       state.role = null;
       state.isAuthenticated = false;
+      state.authInitialized = true;
       state.loading = false;
       state.error = null;
       localStorage.removeItem('token');
@@ -128,6 +130,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.role = action.payload.user?.role || null;
         state.isAuthenticated = true;
+        state.authInitialized = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -143,6 +146,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.role = action.payload.user?.role || null;
         state.isAuthenticated = true;
+        state.authInitialized = true;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
@@ -155,9 +159,20 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.role = action.payload.user?.role || null;
+        state.isAuthenticated = true;
+        state.authInitialized = true;
       })
-      .addCase(getProfile.rejected, (state) => {
+      .addCase(getProfile.rejected, (state, action) => {
         state.loading = false;
+        if (action.payload === 401) {
+          state.user = null;
+          state.token = null;
+          state.role = null;
+          state.isAuthenticated = false;
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+        state.authInitialized = true;
       })
       .addCase(updateProfile.pending, (state) => {
         state.loading = true;

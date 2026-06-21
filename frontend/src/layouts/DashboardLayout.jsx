@@ -1,8 +1,8 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { AppShell, Burger, Group, ActionIcon, useMantineColorScheme, useComputedColorScheme } from '@mantine/core';
+import { AppShell, Burger, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { motion } from 'framer-motion';
-import { IconSun, IconMoon } from '@tabler/icons-react';
+import HeaderNav from '../components/layout/HeaderNav';
 import SidebarNav from '../components/layout/SidebarNav';
 
 const pageVariants = {
@@ -14,8 +14,6 @@ export default function DashboardLayout() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
   const location = useLocation();
-  const { setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme('light');
 
   return (
     <AppShell
@@ -28,17 +26,14 @@ export default function DashboardLayout() {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
-            <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" />
-          </Group>
-          <Group>
-            <ActionIcon variant="subtle" onClick={() => setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark')} size="lg">
-              {computedColorScheme === 'dark' ? <IconSun size={20} /> : <IconMoon size={20} />}
-            </ActionIcon>
-          </Group>
-        </Group>
+        <HeaderNav
+          burger={
+            <Group wrap="nowrap">
+              <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
+              <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" />
+            </Group>
+          }
+        />
       </AppShell.Header>
 
       <AppShell.Navbar p="xs">

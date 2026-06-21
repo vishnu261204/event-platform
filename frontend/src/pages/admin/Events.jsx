@@ -1,20 +1,42 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput } from '@mantine/core';
-import { IconSearch, IconEye, IconEdit } from '@tabler/icons-react';
+import { Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput, Skeleton, Stack, ActionIcon, Tooltip } from '@mantine/core';
+import { IconSearch, IconEye, IconTrash } from '@tabler/icons-react';
 import { formatDate, getStatusColor, getStatusLabel } from '../../lib/utils';
-
-const events = [
-  { title: 'Tech Conference 2025', category: 'Technology', date: '2025-06-15', status: 'published', ticketsSold: 450 },
-  { title: 'Summer Music Festival', category: 'Music', date: '2025-07-20', status: 'published', ticketsSold: 1200 },
-  { title: 'Modern Art Workshop', category: 'Art', date: '2025-05-10', status: 'completed', ticketsSold: 85 },
-  { title: 'Business Leadership Summit', category: 'Business', date: '2025-08-05', status: 'draft', ticketsSold: 0 },
-  { title: 'Annual Charity Gala', category: 'Charity', date: '2025-09-12', status: 'published', ticketsSold: 320 },
-  { title: 'Photography Expo', category: 'Art', date: '2025-04-18', status: 'completed', ticketsSold: 210 },
-  { title: 'Startup Pitch Night', category: 'Business', date: '2025-10-01', status: 'sold_out', ticketsSold: 500 },
-  { title: 'Wellness Retreat', category: 'Health', date: '2025-11-15', status: 'draft', ticketsSold: 0 },
-];
+import { adminAPI, eventAPI } from '../../services/api';
+import { notifications } from '@mantine/notifications';
 
 export default function Events() {
+  const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  const fetchEvents = () => {
+    setLoading(true);
+    adminAPI.getEvents()
+      .then((res) => setEvents(res.data.data.events || []))
+      .catch(() => setEvents([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchEvents(); }, []);
+
+  const handleCancel = async (id) => {
+    try {
+      await eventAPI.delete(id);
+      notifications.show({ title: 'Cancelled', message: 'Event cancelled successfully', color: 'green' });
+      fetchEvents();
+    } catch {
+      notifications.show({ title: 'Error', message: 'Failed to cancel event', color: 'red' });
+    }
+  };
+
+  const filtered = events.filter((e) =>
+    !search || e.title?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
       <Group justify="space-between" mb="lg">
@@ -22,48 +44,72 @@ export default function Events() {
         <TextInput
           placeholder="Search events..."
           leftSection={<IconSearch size={16} />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           w={300}
         />
       </Group>
 
       <Paper p="lg" radius="md" withBorder>
-        <ScrollArea>
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Title</Table.Th>
-                <Table.Th>Category</Table.Th>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Tickets Sold</Table.Th>
-                <Table.Th>Actions</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {events.map((event) => (
-                <Table.Tr key={event.title}>
-                  <Table.Td>
-                    <Text fw={500}>{event.title}</Text>
-                  </Table.Td>
-                  <Table.Td>{event.category}</Table.Td>
-                  <Table.Td>{formatDate(event.date)}</Table.Td>
-                  <Table.Td>
-                    <Badge color={getStatusColor(event.status)} size="sm">
-                      {getStatusLabel(event.status)}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>{event.ticketsSold.toLocaleString()}</Table.Td>
-                  <Table.Td>
-                    <Group gap="xs">
-                      <IconEye size={18} style={{ cursor: 'pointer', color: 'var(--mantine-color-blue-6)' }} />
-                      <IconEdit size={18} style={{ cursor: 'pointer', color: 'var(--mantine-color-gray-6)' }} />
-                    </Group>
-                  </Table.Td>
+        {loading ? (
+          <Stack gap="xs" p="md">
+            <Skeleton height={36} radius="sm" mb="xs" />
+            {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={48} radius="sm" />)}
+          </Stack>
+        ) : (
+          <ScrollArea>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Title</Table.Th>
+                  <Table.Th>Category</Table.Th>
+                  <Table.Th>Date</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Tickets Sold</Table.Th>
+                  <Table.Th>Actions</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
+              </Table.Thead>
+              <Table.Tbody>
+                {filtered.length === 0 ? (
+                  <Table.Tr><Table.Td colSpan={6}><Text ta="center" c="dimmed" py="xl">No events found</Text></Table.Td></Table.Tr>
+                ) : filtered.map((event) => {
+                  const ticketsSold = (event.totalSeats || 0) - (event.availableSeats || 0);
+                  return (
+                    <Table.Tr key={event._id}>
+                      <Table.Td>
+                        <Text fw={500}>{event.title}</Text>
+                      </Table.Td>
+                      <Table.Td>{event.category}</Table.Td>
+                      <Table.Td>{formatDate(event.date)}</Table.Td>
+                      <Table.Td>
+                        <Badge color={getStatusColor(event.status)} size="sm">
+                          {getStatusLabel(event.status)}
+                        </Badge>
+                      </Table.Td>
+                      <Table.Td>{ticketsSold.toLocaleString()}</Table.Td>
+                      <Table.Td>
+                        <Group gap="xs">
+                          <Tooltip label="View event">
+                            <ActionIcon variant="subtle" color="blue" onClick={() => navigate(`/events/${event._id}`)}>
+                              <IconEye size={18} />
+                            </ActionIcon>
+                          </Tooltip>
+                          {event.status !== 'cancelled' && (
+                            <Tooltip label="Cancel event">
+                              <ActionIcon variant="subtle" color="red" onClick={() => handleCancel(event._id)}>
+                                <IconTrash size={18} />
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </Group>
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
+        )}
       </Paper>
     </motion.div>
   );

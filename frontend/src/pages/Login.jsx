@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   TextInput, PasswordInput, Button, Checkbox, Anchor, Text, Container, Paper, Stack,
-  useMantineColorScheme, useComputedColorScheme,
+  useComputedColorScheme,
 } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,7 +49,7 @@ export default function Login() {
         color: 'green',
         autoClose: 3000,
       });
-      const redirects = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/my-tickets' };
+      const redirects = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/' };
       navigate(redirects[result.user?.role] || '/');
     } catch (err) {
       notifications.show({

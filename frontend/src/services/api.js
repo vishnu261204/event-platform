@@ -4,7 +4,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use((config) => {
@@ -21,9 +20,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
     }
     return Promise.reject(error);
   }
@@ -44,8 +40,6 @@ export const eventAPI = {
   update: (id, data) => api.put(`/events/${id}`, data),
   delete: (id) => api.delete(`/events/${id}`),
   getMyEvents: () => api.get('/events/my-events'),
-  getCategories: () => api.get('/events'),
-  getFeatured: () => api.get('/events'),
 };
 
 export const bookingAPI = {
@@ -55,21 +49,12 @@ export const bookingAPI = {
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
 };
 
-export const ticketAPI = {
-  getMyTickets: () => api.get('/tickets/my-tickets'),
-  getById: (id) => api.get(`/tickets/${id}`),
-};
-
 export const adminAPI = {
   getUsers: (params) => api.get('/admin/users', { params }),
+  toggleUserStatus: (id) => api.put(`/admin/users/${id}/toggle-status`),
   getEvents: (params) => api.get('/admin/events', { params }),
   getBookings: (params) => api.get('/admin/bookings', { params }),
   getDashboard: () => api.get('/admin/dashboard'),
-};
-
-export const checkinAPI = {
-  scan: (data) => api.post('/checkin/scan', data),
-  getTicketByCode: (code) => api.get(`/checkin/ticket/${code}`),
 };
 
 export default api;

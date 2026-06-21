@@ -5,7 +5,10 @@ const bookingSchema = new mongoose.Schema(
     bookingId: {
       type: String,
       unique: true,
-      required: true,
+    },
+    totalAmount: {
+      type: Number,
+      min: 0,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,14 +25,10 @@ const bookingSchema = new mongoose.Schema(
       required: [true, 'Quantity is required'],
       min: 1,
     },
-    amount: {
-      type: Number,
-      required: true,
-    },
     bookingStatus: {
       type: String,
-      enum: ['pending', 'confirmed', 'cancelled'],
-      default: 'confirmed',
+      enum: ['booked', 'cancelled'],
+      default: 'booked',
     },
     bookingDate: {
       type: Date,

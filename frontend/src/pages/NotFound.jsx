@@ -30,9 +30,6 @@ export default function NotFound() {
 
         <Group justify="center" mt="xl">
           <Button component={Link} to="/" variant="filled">
-            Go Home
-          </Button>
-          <Button component={Link} to="/events" variant="light">
             Browse Events
           </Button>
         </Group>

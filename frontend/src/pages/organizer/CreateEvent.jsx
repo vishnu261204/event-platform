@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Paper, Title, Text, TextInput, Textarea, Select, NumberInput, Button, Group, SimpleGrid } from '@mantine/core';
+import { Paper, Title, Text, TextInput, Textarea, Select, NumberInput, Button, Group, SimpleGrid, Image, ActionIcon, Box } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
-import { IconCurrencyDollar, IconUsers, IconPlus, IconPhoto } from '@tabler/icons-react';
+import { IconCurrencyDollar, IconUsers, IconPlus, IconPhoto, IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { eventAPI } from '../../services/api';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -16,9 +17,9 @@ const schema = z.object({
   category: z.string().min(1, 'Category is required'),
   date: z.date({ required_error: 'Date is required' }),
   time: z.string().min(1, 'Time is required'),
-  location: z.string().min(1, 'Location is required'),
+  venue: z.string().min(1, 'Location is required'),
   price: z.number({ required_error: 'Price is required' }).min(0, 'Price cannot be negative'),
-  totalTickets: z.number({ required_error: 'Total tickets is required' }).min(1, 'At least 1 ticket'),
+  totalSeats: z.number({ required_error: 'Total tickets is required' }).min(1, 'At least 1 ticket'),
 });
 
 const categories = [
@@ -34,14 +35,50 @@ const categories = [
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  const { register, handleSubmit, control, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { title: '', description: '', category: '', date: null, time: '', location: '', price: 0, totalTickets: 1 },
+    defaultValues: { title: '', description: '', category: '', date: null, time: '', venue: '', price: 0, totalSeats: 1 },
   });
 
-  const onSubmit = () => {
-    notifications.show({ title: 'Success', message: 'Event created successfully!', color: 'green' });
-    navigate('/organizer/events');
+  const onDrop = useCallback((acceptedFiles) => {
+    const f = acceptedFiles[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+  }, []);
+
+  const removeImage = () => {
+    setFile(null);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(null);
+  };
+
+  const onSubmit = async (formData) => {
+    try {
+      const fd = new FormData();
+      fd.append('title', formData.title);
+      fd.append('description', formData.description);
+      fd.append('category', formData.category);
+      fd.append('venue', formData.venue);
+      fd.append('date', formData.date.toISOString());
+      fd.append('time', formData.time);
+      fd.append('price', formData.price);
+      fd.append('totalSeats', formData.totalSeats);
+      if (file) fd.append('banner', file);
+
+      await eventAPI.create(fd);
+      notifications.show({ title: 'Success', message: 'Event created successfully!', color: 'green' });
+      navigate('/organizer/events');
+    } catch (err) {
+      notifications.show({
+        title: 'Error',
+        message: err.response?.data?.message || 'Failed to create event',
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -69,7 +106,7 @@ export default function CreateEvent() {
                 />
               )}
             />
-            <TextInput label="Location" placeholder="Event location" error={errors.location?.message} {...register('location')} />
+            <TextInput label="Location" placeholder="Event location" error={errors.venue?.message} {...register('venue')} />
           </SimpleGrid>
 
           <SimpleGrid cols={{ base: 1, sm: 2 }} mb="md">
@@ -106,14 +143,14 @@ export default function CreateEvent() {
               )}
             />
             <Controller
-              name="totalTickets"
+              name="totalSeats"
               control={control}
               render={({ field }) => (
                 <NumberInput
                   label="Total Tickets"
                   placeholder="Number of tickets"
                   leftSection={<IconUsers size={16} />}
-                  error={errors.totalTickets?.message}
+                  error={errors.totalSeats?.message}
                   value={field.value}
                   onChange={field.onChange}
                   min={1}
@@ -122,19 +159,37 @@ export default function CreateEvent() {
             />
           </SimpleGrid>
 
-          <Text size="sm" fw={500} mb={4}>Event Image</Text>
-          <Dropzone onDrop={() => {}} mb="lg">
-            <Group justify="center" py="xl">
-              <IconPhoto size={40} />
-              <div>
-                <Text size="sm">Drag image here or click to upload</Text>
-                <Text size="xs" c="dimmed">PNG, JPG up to 5MB</Text>
-              </div>
-            </Group>
-          </Dropzone>
+          <Text size="sm" fw={500} mb={4}>Event Banner</Text>
+          {preview ? (
+            <Box mb="md" style={{ position: 'relative', display: 'inline-block' }}>
+              <Image src={preview} radius="md" h={180} w="auto" fit="cover" alt="Preview" />
+              <ActionIcon
+                variant="filled"
+                color="red"
+                size="sm"
+                radius="xl"
+                style={{ position: 'absolute', top: 8, right: 8 }}
+                onClick={removeImage}
+              >
+                <IconX size={14} />
+              </ActionIcon>
+            </Box>
+          ) : (
+            <Dropzone onDrop={onDrop} accept={['image/png', 'image/jpeg', 'image/webp']} mb="md" maxSize={5 * 1024 * 1024}>
+              <Group justify="center" py="xl">
+                <IconPhoto size={40} />
+                <div>
+                  <Text size="sm">Drag image here or click to upload</Text>
+                  <Text size="xs" c="dimmed">PNG, JPG, WebP up to 5MB</Text>
+                </div>
+              </Group>
+            </Dropzone>
+          )}
 
           <Group pt="md" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
-            <Button type="submit" leftSection={<IconPlus size={16} />}>Create Event</Button>
+            <Button type="submit" leftSection={<IconPlus size={16} />} loading={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Event'}
+            </Button>
             <Button variant="default" onClick={() => navigate('/organizer/events')}>Cancel</Button>
           </Group>
         </form>

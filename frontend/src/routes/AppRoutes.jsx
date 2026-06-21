@@ -2,9 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PublicLayout from '../layouts/PublicLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
-import ProtectedRoute, { AdminRoute, OrganizerRoute, AttendeeRoute } from './ProtectedRoute';
+import { AdminRoute, OrganizerRoute, AttendeeRoute } from './ProtectedRoute';
 
-import Home from '../pages/Home';
 import Events from '../pages/Events';
 import EventDetails from '../pages/EventDetails';
 import Login from '../pages/Login';
@@ -20,10 +19,7 @@ import OrgDashboard from '../pages/organizer/Dashboard';
 import OrgEvents from '../pages/organizer/MyEvents';
 import CreateEvent from '../pages/organizer/CreateEvent';
 import EditEvent from '../pages/organizer/EditEvent';
-import OrgBookings from '../pages/organizer/EventBookings';
-import QRCheckIn from '../pages/organizer/QRCheckIn';
 
-import MyTickets from '../pages/attendee/MyTickets';
 import BookingHistory from '../pages/attendee/BookingHistory';
 import Profile from '../pages/attendee/Profile';
 
@@ -32,19 +28,21 @@ export default function AppRoutes() {
 
   const DashboardRedirect = () => {
     if (!user) return <Navigate to="/login" />;
-    const routes = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/my-tickets' };
+    const routes = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/' };
     return <Navigate to={routes[user.role] || '/'} />;
   };
 
   return (
     <Routes>
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/events" element={<Events />} />
+        <Route path="/" element={<Events />} />
+        <Route path="/events" element={<Navigate to="/" replace />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
+        <Route path="/my-bookings" element={<AttendeeRoute><BookingHistory /></AttendeeRoute>} />
+        <Route path="/profile" element={<AttendeeRoute><Profile /></AttendeeRoute>} />
       </Route>
 
       <Route element={<AdminRoute><DashboardLayout /></AdminRoute>}>
@@ -59,14 +57,6 @@ export default function AppRoutes() {
         <Route path="/organizer/events" element={<OrgEvents />} />
         <Route path="/organizer/events/create" element={<CreateEvent />} />
         <Route path="/organizer/events/:id/edit" element={<EditEvent />} />
-        <Route path="/organizer/events/:id/bookings" element={<OrgBookings />} />
-        <Route path="/organizer/checkin" element={<QRCheckIn />} />
-      </Route>
-
-      <Route element={<AttendeeRoute><PublicLayout /></AttendeeRoute>}>
-        <Route path="/my-tickets" element={<MyTickets />} />
-        <Route path="/bookings" element={<BookingHistory />} />
-        <Route path="/profile" element={<Profile />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

@@ -49,6 +49,7 @@ const eventSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+      default: function () { return this.totalSeats; },
     },
     banner: {
       type: String,

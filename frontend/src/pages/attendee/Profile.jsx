@@ -1,26 +1,75 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Paper, Title, Text, Group, Stack, Card, Badge, Button, Tabs, Avatar, Switch, PasswordInput } from '@mantine/core';
+import { Paper, Title, Text, Group, Stack, Card, Badge, Button, Tabs, Avatar, PasswordInput, TextInput, Skeleton } from '@mantine/core';
 import { IconUser, IconMail, IconPhone, IconCalendar, IconLock } from '@tabler/icons-react';
+import { useDispatch, useSelector } from 'react-redux';
 import { formatDate, getInitials } from '../../lib/utils';
-
-const user = {
-  name: 'Alex Johnson',
-  email: 'alex.johnson@example.com',
-  phone: '+1 (555) 123-4567',
-  role: 'attendee',
-  bio: 'Event enthusiast and tech lover. I enjoy attending music festivals and tech conferences around the country.',
-  memberSince: '2025-03-15',
-};
+import { updateProfile, changePassword } from '../../features/auth/authSlice';
+import { notifications } from '@mantine/notifications';
 
 export default function Profile() {
+  const dispatch = useDispatch();
+  const { user, loading } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState('details');
   const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
-  const [notifications, setNotifications] = useState({
-    emailReminders: true,
-    smsUpdates: false,
-    promotional: true,
-  });
+  const [name, setName] = useState('');
+
+  const handleUpdateProfile = async () => {
+    if (!name.trim()) return;
+    try {
+      await dispatch(updateProfile({ name })).unwrap();
+      notifications.show({ title: 'Updated', message: 'Profile updated successfully', color: 'green' });
+    } catch (err) {
+      notifications.show({ title: 'Error', message: typeof err === 'string' ? err : 'Failed to update profile', color: 'red' });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (password.new !== password.confirm) {
+      notifications.show({ title: 'Error', message: 'Passwords do not match', color: 'red' });
+      return;
+    }
+    try {
+      await dispatch(changePassword({ currentPassword: password.current, newPassword: password.new })).unwrap();
+      notifications.show({ title: 'Success', message: 'Password changed successfully', color: 'green' });
+      setPassword({ current: '', new: '', confirm: '' });
+    } catch (err) {
+      notifications.show({ title: 'Error', message: typeof err === 'string' ? err : 'Failed to change password', color: 'red' });
+    }
+  };
+
+  if (!user) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 16px' }}>
+          <Skeleton height={36} width={120} radius="md" mb="lg" />
+          <Paper withBorder radius="md" p="xl" mb="lg">
+            <Group gap="lg" wrap="nowrap">
+              <Skeleton height={60} width={60} radius="xl" />
+              <Stack gap={6}>
+                <Skeleton height={24} width={200} radius="sm" />
+                <Skeleton height={14} width={250} radius="sm" />
+                <Skeleton height={14} width={150} radius="sm" />
+              </Stack>
+            </Group>
+          </Paper>
+          <Group gap="sm" mb="md">
+            <Skeleton height={36} width={140} radius="sm" />
+            <Skeleton height={36} width={160} radius="sm" />
+          </Group>
+          <Card withBorder radius="md" padding="lg">
+            <Skeleton height={28} width={180} radius="sm" mb="md" />
+            <Stack gap="md">
+              <Skeleton height={36} radius="sm" />
+              <Skeleton height={20} width={200} radius="sm" />
+              <Skeleton height={20} width={100} radius="sm" />
+              <Skeleton height={36} width={140} radius="sm" />
+            </Stack>
+          </Card>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
@@ -42,7 +91,7 @@ export default function Profile() {
                 <Badge color="blue" variant="light">{user.role}</Badge>
                 <Group gap={4}>
                   <IconCalendar size={14} />
-                  <Text size="xs" c="dimmed">Member since {formatDate(user.memberSince, 'MMMM YYYY')}</Text>
+                  <Text size="xs" c="dimmed">Member since {formatDate(user.createdAt, 'MMMM YYYY')}</Text>
                 </Group>
               </Group>
             </div>
@@ -62,7 +111,10 @@ export default function Profile() {
             <Stack gap="md">
               <div>
                 <Text size="sm" c="dimmed" mb={2}>Full Name</Text>
-                <Text>{user.name}</Text>
+                <TextInput
+                  defaultValue={user.name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
               <div>
                 <Text size="sm" c="dimmed" mb={2}>Email</Text>
@@ -72,16 +124,12 @@ export default function Profile() {
                 </Group>
               </div>
               <div>
-                <Text size="sm" c="dimmed" mb={2}>Phone</Text>
-                <Group gap={6}>
-                  <IconPhone size={14} />
-                  <Text>{user.phone}</Text>
-                </Group>
+                <Text size="sm" c="dimmed" mb={2}>Role</Text>
+                <Badge color="blue" variant="light">{user.role}</Badge>
               </div>
-              <div>
-                <Text size="sm" c="dimmed" mb={2}>Bio</Text>
-                <Text>{user.bio}</Text>
-              </div>
+              <Button onClick={handleUpdateProfile} loading={loading} disabled={!name.trim()}>
+                Save Changes
+              </Button>
             </Stack>
           </Card>
         )}
@@ -109,31 +157,9 @@ export default function Profile() {
                   value={password.confirm}
                   onChange={(e) => setPassword({ ...password, confirm: e.target.value })}
                 />
-                <Button mt="xs">Update Password</Button>
-              </Stack>
-            </Card>
-
-            <Card withBorder radius="md" padding="lg">
-              <Text fw={600} size="lg" mb="md">Notification Preferences</Text>
-              <Stack gap="md">
-                <Switch
-                  label="Email Reminders"
-                  description="Receive email reminders before events"
-                  checked={notifications.emailReminders}
-                  onChange={() => setNotifications({ ...notifications, emailReminders: !notifications.emailReminders })}
-                />
-                <Switch
-                  label="SMS Updates"
-                  description="Get text message updates about your bookings"
-                  checked={notifications.smsUpdates}
-                  onChange={() => setNotifications({ ...notifications, smsUpdates: !notifications.smsUpdates })}
-                />
-                <Switch
-                  label="Promotional Emails"
-                  description="Receive offers and event recommendations"
-                  checked={notifications.promotional}
-                  onChange={() => setNotifications({ ...notifications, promotional: !notifications.promotional })}
-                />
+                <Button mt="xs" onClick={handleChangePassword} loading={loading}>
+                  Update Password
+                </Button>
               </Stack>
             </Card>
           </Stack>

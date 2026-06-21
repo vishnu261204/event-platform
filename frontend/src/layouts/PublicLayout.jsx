@@ -6,7 +6,9 @@ import FooterSection from '../components/layout/Footer';
 export default function PublicLayout() {
   return (
     <AppShell header={{ height: 60 }} padding={0}>
-      <HeaderNav />
+      <AppShell.Header>
+        <HeaderNav />
+      </AppShell.Header>
       <AppShell.Main>
         <Outlet />
         <FooterSection />

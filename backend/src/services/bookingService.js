@@ -1,10 +1,16 @@
-const { v4: uuidv4 } = require('uuid');
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
-const Ticket = require('../models/Ticket');
+const Counter = require('../models/Counter');
 const ApiError = require('../utils/ApiError');
-const generateTicketCode = require('../utils/generateTicketCode');
-const qrService = require('./qrService');
+
+async function getNextBookingId() {
+  const counter = await Counter.findOneAndUpdate(
+    { name: 'booking' },
+    { $inc: { sequence: 1 } },
+    { new: true, upsert: true }
+  );
+  return `BOOK-${counter.sequence.toString().padStart(6, '0')}`;
+}
 
 class BookingService {
   async createBooking(userId, eventId, quantity) {
@@ -28,35 +34,19 @@ class BookingService {
     event.availableSeats -= quantity;
     await event.save();
 
-    const amount = event.price * quantity;
-    const bookingId = `BK-${uuidv4().slice(0, 8).toUpperCase()}`;
+    const bookingId = await getNextBookingId();
+    const totalAmount = event.price * quantity;
 
-    const booking = await Booking.create({
-      bookingId,
-      userId,
-      eventId,
-      quantity,
-      amount,
-    });
+    let booking;
+    try {
+      booking = await Booking.create({ userId, eventId, quantity, bookingId, totalAmount });
+    } catch (err) {
+      event.availableSeats += quantity;
+      await event.save();
+      throw err;
+    }
 
-    const ticketCode = await generateTicketCode(Booking);
-
-    const qrData = {
-      ticketCode,
-      bookingId: booking._id.toString(),
-      eventId: event._id.toString(),
-      userId: userId.toString(),
-    };
-
-    const qrPath = await qrService.generate(qrData);
-
-    const ticket = await Ticket.create({
-      ticketCode,
-      bookingId: booking._id,
-      qrCode: qrPath,
-    });
-
-    return { booking, ticket, event };
+    return { booking, event };
   }
 
   async cancelBooking(bookingId, userId) {
@@ -81,11 +71,6 @@ class BookingService {
       event.availableSeats += booking.quantity;
       await event.save();
     }
-
-    await Ticket.findOneAndUpdate(
-      { bookingId: booking._id },
-      { checkInStatus: 'checked_in' }
-    );
 
     return booking;
   }

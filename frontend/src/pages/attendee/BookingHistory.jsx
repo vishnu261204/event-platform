@@ -1,49 +1,50 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Title, Text, Badge, Table, ScrollArea, TextInput, Paper } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { Title, Text, Badge, Table, ScrollArea, TextInput, Paper, Skeleton, Stack } from '@mantine/core';
+import { IconSearch, IconTicket } from '@tabler/icons-react';
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
-
-const bookings = [
-  { id: 1, event: 'Summer Music Festival', date: '2026-07-15', tickets: 2, total: 178, status: 'confirmed', bookedOn: '2026-06-10' },
-  { id: 2, event: 'Tech Conference 2026', date: '2026-10-12', tickets: 1, total: 299, status: 'confirmed', bookedOn: '2026-09-01' },
-  { id: 3, event: 'Jazz Night', date: '2026-07-22', tickets: 3, total: 165, status: 'completed', bookedOn: '2026-06-15' },
-  { id: 4, event: 'Food & Wine Festival', date: '2026-09-05', tickets: 2, total: 150, status: 'completed', bookedOn: '2026-08-20' },
-  { id: 5, event: 'Marathon 2026', date: '2026-11-03', tickets: 1, total: 60, status: 'cancelled', bookedOn: '2026-10-01' },
-  { id: 6, event: 'Startup Networking', date: '2026-11-08', tickets: 1, total: 25, status: 'confirmed', bookedOn: '2026-10-25' },
-  { id: 7, event: 'AI Workshop', date: '2026-09-18', tickets: 2, total: 300, status: 'completed', bookedOn: '2026-08-05' },
-];
+import { bookingAPI } from '../../services/api';
 
 export default function BookingHistory() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    bookingAPI.getMyBookings()
+      .then((res) => setBookings(res.data.data.bookings || []))
+      .catch(() => setBookings([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return bookings;
     const q = search.toLowerCase();
-    return bookings.filter((b) => b.event.toLowerCase().includes(q));
-  }, [search]);
+    return bookings.filter((b) => b.eventId?.title?.toLowerCase().includes(q));
+  }, [search, bookings]);
 
   const rows = filtered.map((booking) => (
-    <Table.Tr key={booking.id}>
+    <Table.Tr key={booking._id}>
       <Table.Td>
-        <Text size="sm" fw={500}>{booking.event}</Text>
+        <Text size="sm" fw={500}>{booking.eventId?.title || 'N/A'}</Text>
       </Table.Td>
       <Table.Td>
-        <Text size="sm">{formatDate(booking.date)}</Text>
+        <Text size="sm">{formatDate(booking.eventId?.date)}</Text>
       </Table.Td>
       <Table.Td>
-        <Text size="sm">{booking.tickets}</Text>
+        <Text size="sm">{booking.quantity}</Text>
       </Table.Td>
       <Table.Td>
-        <Text size="sm" fw={600}>{formatCurrency(booking.total)}</Text>
+        <Text size="sm" fw={600}>{formatCurrency((booking.eventId?.price || 0) * booking.quantity)}</Text>
       </Table.Td>
       <Table.Td>
-        <Badge color={getStatusColor(booking.status)} variant="light" size="sm">
-          {getStatusLabel(booking.status)}
+        <Badge color={getStatusColor(booking.bookingStatus)} variant="light" size="sm">
+          {getStatusLabel(booking.bookingStatus)}
         </Badge>
       </Table.Td>
       <Table.Td>
-        <Text size="sm" c="dimmed">{formatDate(booking.bookedOn)}</Text>
+        <Text size="sm" c="dimmed">{formatDate(booking.createdAt)}</Text>
       </Table.Td>
     </Table.Tr>
   ));
@@ -63,31 +64,40 @@ export default function BookingHistory() {
         />
 
         <Paper withBorder radius="md">
-          <ScrollArea>
-            <Table striped highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Event</Table.Th>
-                  <Table.Th>Date</Table.Th>
-                  <Table.Th>Tickets</Table.Th>
-                  <Table.Th>Total</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Booked On</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {rows.length > 0 ? rows : (
+          {loading ? (
+            <Stack gap="xs" p="md">
+              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} height={48} radius="sm" />)}
+            </Stack>
+          ) : (
+            <ScrollArea>
+              <Table striped highlightOnHover>
+                <Table.Thead>
                   <Table.Tr>
-                    <Table.Td colSpan={6}>
-                      <Text ta="center" py="xl" c="dimmed">
-                        {search ? 'No bookings match your search' : 'No bookings yet'}
-                      </Text>
-                    </Table.Td>
+                    <Table.Th>Event</Table.Th>
+                    <Table.Th>Date</Table.Th>
+                    <Table.Th>Tickets</Table.Th>
+                    <Table.Th>Total</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.Th>Booked On</Table.Th>
                   </Table.Tr>
-                )}
-              </Table.Tbody>
-            </Table>
-          </ScrollArea>
+                </Table.Thead>
+                <Table.Tbody>
+                  {rows.length > 0 ? rows : (
+                    <Table.Tr>
+                      <Table.Td colSpan={6}>
+                        <Stack align="center" py="xl">
+                          <IconTicket size={48} color="var(--mantine-color-gray-4)" />
+                          <Text ta="center" c="dimmed">
+                            {search ? 'No bookings match your search' : 'No bookings yet'}
+                          </Text>
+                        </Stack>
+                      </Table.Td>
+                    </Table.Tr>
+                  )}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
         </Paper>
       </div>
     </motion.div>

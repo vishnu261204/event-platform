@@ -7,8 +7,6 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
-const ticketRoutes = require('./routes/ticketRoutes');
-const checkinRoutes = require('./routes/checkinRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -29,8 +27,6 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/tickets', ticketRoutes);
-app.use('/api/checkin', checkinRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use((req, res) => {

@@ -6,7 +6,7 @@ export const fetchEvents = createAsyncThunk(
   async (params, { rejectWithValue }) => {
     try {
       const { data } = await eventAPI.getAll(params);
-      return data;
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch events');
     }
@@ -18,7 +18,7 @@ export const fetchFeaturedEvents = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await eventAPI.getFeatured();
-      return data;
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch featured events');
     }
@@ -30,7 +30,7 @@ export const fetchEventById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const { data } = await eventAPI.getById(id);
-      return data;
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch event');
     }
@@ -42,7 +42,7 @@ export const createEvent = createAsyncThunk(
   async (eventData, { rejectWithValue }) => {
     try {
       const { data } = await eventAPI.create(eventData);
-      return data;
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to create event');
     }
@@ -54,7 +54,7 @@ export const updateEvent = createAsyncThunk(
   async ({ id, eventData }, { rejectWithValue }) => {
     try {
       const { data } = await eventAPI.update(id, eventData);
-      return data;
+      return data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to update event');
     }
@@ -73,23 +73,10 @@ export const deleteEvent = createAsyncThunk(
   }
 );
 
-export const fetchCategories = createAsyncThunk(
-  'events/fetchCategories',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await eventAPI.getCategories();
-      return data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch categories');
-    }
-  }
-);
-
 const initialState = {
   events: [],
   featuredEvents: [],
   currentEvent: null,
-  categories: [],
   totalPages: 1,
   currentPage: 1,
   totalEvents: 0,
@@ -116,10 +103,10 @@ const eventSlice = createSlice({
       })
       .addCase(fetchEvents.fulfilled, (state, action) => {
         state.loading = false;
-        state.events = action.payload.events;
-        state.totalPages = action.payload.totalPages;
-        state.currentPage = action.payload.currentPage;
-        state.totalEvents = action.payload.totalEvents;
+        state.events = action.payload.events || [];
+        state.totalPages = action.payload.pagination?.pages || 1;
+        state.currentPage = action.payload.pagination?.page || 1;
+        state.totalEvents = action.payload.pagination?.total || 0;
       })
       .addCase(fetchEvents.rejected, (state, action) => {
         state.loading = false;
@@ -130,7 +117,7 @@ const eventSlice = createSlice({
       })
       .addCase(fetchFeaturedEvents.fulfilled, (state, action) => {
         state.loading = false;
-        state.featuredEvents = action.payload.events;
+        state.featuredEvents = action.payload.events || [];
       })
       .addCase(fetchFeaturedEvents.rejected, (state) => {
         state.loading = false;
@@ -171,9 +158,6 @@ const eventSlice = createSlice({
       })
       .addCase(deleteEvent.fulfilled, (state, action) => {
         state.events = state.events.filter((e) => e._id !== action.payload);
-      })
-      .addCase(fetchCategories.fulfilled, (state, action) => {
-        state.categories = action.payload.categories;
       });
   },
 });
