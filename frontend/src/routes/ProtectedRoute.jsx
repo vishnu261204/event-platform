@@ -20,3 +20,15 @@ export default function ProtectedRoute({ children, roles }) {
 
   return children;
 }
+
+export function AdminRoute({ children }) {
+  return <ProtectedRoute roles={['admin']}>{children}</ProtectedRoute>;
+}
+
+export function OrganizerRoute({ children }) {
+  return <ProtectedRoute roles={['organizer', 'admin']}>{children}</ProtectedRoute>;
+}
+
+export function AttendeeRoute({ children }) {
+  return <ProtectedRoute roles={['attendee']}>{children}</ProtectedRoute>;
+}

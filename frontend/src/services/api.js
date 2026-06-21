@@ -21,7 +21,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -32,6 +34,7 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
+  changePassword: (data) => api.put('/auth/change-password', data),
 };
 
 export const eventAPI = {
@@ -40,37 +43,33 @@ export const eventAPI = {
   create: (data) => api.post('/events', data),
   update: (id, data) => api.put(`/events/${id}`, data),
   delete: (id) => api.delete(`/events/${id}`),
-  getCategories: () => api.get('/events/categories'),
-  getFeatured: () => api.get('/events/featured'),
+  getMyEvents: () => api.get('/events/my-events'),
+  getCategories: () => api.get('/events'),
+  getFeatured: () => api.get('/events'),
 };
 
 export const bookingAPI = {
-  getAll: (params) => api.get('/bookings', { params }),
-  getById: (id) => api.get(`/bookings/${id}`),
   create: (data) => api.post('/bookings', data),
+  getMyBookings: () => api.get('/bookings/my-bookings'),
+  getEventBookings: (eventId) => api.get(`/bookings/event/${eventId}`),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
-  getMyBookings: (params) => api.get('/bookings/mine', { params }),
-  getEventBookings: (eventId, params) => api.get(`/bookings/event/${eventId}`, { params }),
-  checkIn: (bookingId) => api.put(`/bookings/${bookingId}/checkin`),
 };
 
 export const ticketAPI = {
-  getMyTickets: (params) => api.get('/tickets', { params }),
+  getMyTickets: () => api.get('/tickets/my-tickets'),
   getById: (id) => api.get(`/tickets/${id}`),
-  validateQR: (qrCode) => api.post('/tickets/validate', { qrCode }),
 };
 
-export const userAPI = {
-  getAll: (params) => api.get('/users', { params }),
-  getById: (id) => api.get(`/users/${id}`),
-  update: (id, data) => api.put(`/users/${id}`, data),
-  delete: (id) => api.delete(`/users/${id}`),
+export const adminAPI = {
+  getUsers: (params) => api.get('/admin/users', { params }),
+  getEvents: (params) => api.get('/admin/events', { params }),
+  getBookings: (params) => api.get('/admin/bookings', { params }),
+  getDashboard: () => api.get('/admin/dashboard'),
 };
 
-export const dashboardAPI = {
-  getAdminStats: () => api.get('/dashboard/admin'),
-  getOrganizerStats: () => api.get('/dashboard/organizer'),
-  getAttendeeStats: () => api.get('/dashboard/attendee'),
+export const checkinAPI = {
+  scan: (data) => api.post('/checkin/scan', data),
+  getTicketByCode: (code) => api.get(`/checkin/ticket/${code}`),
 };
 
 export default api;

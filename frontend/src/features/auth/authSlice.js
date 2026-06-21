@@ -1,30 +1,36 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authAPI } from '../../services/api';
 
-export const login = createAsyncThunk(
-  'auth/login',
+export const loginUser = createAsyncThunk(
+  'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
     try {
-      const { data } = await authAPI.login(credentials);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      return data;
+      const response = await authAPI.login(credentials);
+      const result = response.data;
+      localStorage.setItem('token', result.data.token);
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      return result.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Login failed');
+      return rejectWithValue(
+        err.response?.data?.message || 'Login failed. Please check your credentials.'
+      );
     }
   }
 );
 
-export const register = createAsyncThunk(
-  'auth/register',
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
   async (userData, { rejectWithValue }) => {
     try {
-      const { data } = await authAPI.register(userData);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      return data;
+      const response = await authAPI.register(userData);
+      const result = response.data;
+      localStorage.setItem('token', result.data.token);
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      return result.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Registration failed');
+      return rejectWithValue(
+        err.response?.data?.message || 'Registration failed. Please try again.'
+      );
     }
   }
 );
@@ -33,10 +39,14 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await authAPI.getProfile();
-      return data;
+      const response = await authAPI.getProfile();
+      const result = response.data;
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      return result.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch profile');
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to fetch profile'
+      );
     }
   }
 );
@@ -45,22 +55,40 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (userData, { rejectWithValue }) => {
     try {
-      const { data } = await authAPI.updateProfile(userData);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      return data;
+      const response = await authAPI.updateProfile(userData);
+      const result = response.data;
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      return result.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to update profile');
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to update profile'
+      );
     }
   }
 );
 
-const user = localStorage.getItem('user');
-const token = localStorage.getItem('token');
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (passwordData, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.changePassword(passwordData);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to change password'
+      );
+    }
+  }
+);
+
+const storedUser = localStorage.getItem('user');
+const storedToken = localStorage.getItem('token');
 
 const initialState = {
-  user: user ? JSON.parse(user) : null,
-  token: token || null,
-  isAuthenticated: !!token,
+  user: storedUser ? JSON.parse(storedUser) : null,
+  token: storedToken || null,
+  role: storedUser ? JSON.parse(storedUser).role : null,
+  isAuthenticated: !!storedToken,
   loading: false,
   error: null,
 };
@@ -72,6 +100,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
+      state.role = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
@@ -84,31 +113,33 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.pending, (state) => {
+      .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        state.role = action.payload.user?.role || null;
         state.isAuthenticated = true;
       })
-      .addCase(login.rejected, (state, action) => {
+      .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(register.pending, (state) => {
+      .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        state.role = action.payload.user?.role || null;
         state.isAuthenticated = true;
       })
-      .addCase(register.rejected, (state, action) => {
+      .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -118,6 +149,7 @@ const authSlice = createSlice({
       .addCase(getProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
+        state.role = action.payload.user?.role || null;
       })
       .addCase(getProfile.rejected, (state) => {
         state.loading = false;
@@ -128,8 +160,19 @@ const authSlice = createSlice({
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
+        state.role = action.payload.user?.role || null;
       })
       .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

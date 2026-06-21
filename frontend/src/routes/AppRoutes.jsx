@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PublicLayout from '../layouts/PublicLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
-import ProtectedRoute from './ProtectedRoute';
+import ProtectedRoute, { AdminRoute, OrganizerRoute, AttendeeRoute } from './ProtectedRoute';
 
 import Home from '../pages/Home';
 import Events from '../pages/Events';
@@ -47,26 +47,14 @@ export default function AppRoutes() {
         <Route path="/dashboard" element={<DashboardRedirect />} />
       </Route>
 
-      <Route
-        element={
-          <ProtectedRoute roles={['admin']}>
-            <DashboardLayout role="admin" />
-          </ProtectedRoute>
-        }
-      >
+      <Route element={<AdminRoute><DashboardLayout /></AdminRoute>}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/events" element={<AdminEvents />} />
         <Route path="/admin/bookings" element={<AdminBookings />} />
       </Route>
 
-      <Route
-        element={
-          <ProtectedRoute roles={['organizer']}>
-            <DashboardLayout role="organizer" />
-          </ProtectedRoute>
-        }
-      >
+      <Route element={<OrganizerRoute><DashboardLayout /></OrganizerRoute>}>
         <Route path="/organizer/dashboard" element={<OrgDashboard />} />
         <Route path="/organizer/events" element={<OrgEvents />} />
         <Route path="/organizer/events/create" element={<CreateEvent />} />
@@ -75,13 +63,7 @@ export default function AppRoutes() {
         <Route path="/organizer/checkin" element={<QRCheckIn />} />
       </Route>
 
-      <Route
-        element={
-          <ProtectedRoute roles={['attendee']}>
-            <PublicLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route element={<AttendeeRoute><PublicLayout /></AttendeeRoute>}>
         <Route path="/my-tickets" element={<MyTickets />} />
         <Route path="/bookings" element={<BookingHistory />} />
         <Route path="/profile" element={<Profile />} />
