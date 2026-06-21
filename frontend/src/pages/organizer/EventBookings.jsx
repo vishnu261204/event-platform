@@ -58,19 +58,22 @@ export default function EventBookings() {
 
       <Paper withBorder radius="md">
         <Tabs value={activeTab} onChange={setActiveTab}>
-          <Group justify="space-between" p="md" pb={0}>
-            <Tabs.List>
-              {eventNames.map((e) => (
-                <Tabs.Tab key={e} value={e}>{e}</Tabs.Tab>
-              ))}
-            </Tabs.List>
+          <Stack gap="md" p="md" pb={0}>
+            <ScrollArea type="never">
+              <Tabs.List>
+                {eventNames.map((e) => (
+                  <Tabs.Tab key={e} value={e}>{e}</Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </ScrollArea>
             <TextInput
               placeholder="Search by booking ID or customer..."
               leftSection={<IconSearch size={16} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              w={{ base: '100%', sm: 360 }}
             />
-          </Group>
+          </Stack>
         </Tabs>
 
         {loading ? (

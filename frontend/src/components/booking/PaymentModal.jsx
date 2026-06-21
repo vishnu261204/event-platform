@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Modal, Button, Text, Stack, Group, Divider } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { IconCircleCheck } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '../../lib/utils';
@@ -11,6 +12,7 @@ import { notifications } from '@mantine/notifications';
 export default function PaymentModal({ opened, onClose, event, quantity }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -51,6 +53,7 @@ export default function PaymentModal({ opened, onClose, event, quantity }) {
       withCloseButton={!submitting}
       centered
       size="md"
+      fullScreen={isMobile}
       padding={0}
     >
       <AnimatePresence mode="wait">

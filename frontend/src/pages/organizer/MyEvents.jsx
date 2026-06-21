@@ -50,26 +50,28 @@ export default function MyEvents() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <Group justify="space-between" mb="lg">
+      <Group justify="space-between" mb="lg" wrap="wrap">
         <Title order={2}>My Events</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/organizer/events/create')}>Create New Event</Button>
       </Group>
 
       <Tabs value={activeTab} onChange={setActiveTab}>
-        <Group justify="space-between" mb="md">
-          <Tabs.List>
-            <Tabs.Tab value="active">Active ({counts.active})</Tabs.Tab>
-            <Tabs.Tab value="draft">Draft ({counts.draft})</Tabs.Tab>
-            <Tabs.Tab value="completed">Completed ({counts.completed})</Tabs.Tab>
-          </Tabs.List>
-          <TextInput
-            placeholder="Search events by name or venue..."
-            leftSection={<IconSearch size={16} />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ maxWidth: 320 }}
-          />
-        </Group>
+        <Stack gap="md" mb="md">
+          <Group justify="space-between" wrap="wrap">
+            <Tabs.List>
+              <Tabs.Tab value="active">Active ({counts.active})</Tabs.Tab>
+              <Tabs.Tab value="draft">Draft ({counts.draft})</Tabs.Tab>
+              <Tabs.Tab value="completed">Completed ({counts.completed})</Tabs.Tab>
+            </Tabs.List>
+            <TextInput
+              placeholder="Search events by name or venue..."
+              leftSection={<IconSearch size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              w={{ base: '100%', sm: 320 }}
+            />
+          </Group>
+        </Stack>
 
         {loading ? (
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">

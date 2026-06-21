@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Container, Title, Text, Card, Badge, Button, SimpleGrid, Group, Stack, TextInput, Skeleton, Image } from '@mantine/core'
+import { Container, Title, Text, Card, Badge, Button, SimpleGrid, Group, Stack, TextInput, Skeleton, Image, ScrollArea } from '@mantine/core'
 import { formatCurrency, getImageUrl } from '../lib/utils'
 import { IconSearch, IconCalendar, IconMapPin, IconX, IconTicket } from '@tabler/icons-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -41,7 +41,7 @@ export default function Events() {
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
-        <Group justify="space-between" align="flex-start">
+        <Group justify="space-between" align="flex-start" wrap="wrap">
           <div>
             <Title order={1}>Discover Events</Title>
             <Text c="dimmed">Find and book the best events in your city</Text>
@@ -56,8 +56,9 @@ export default function Events() {
           />
         </Group>
 
-        <Group gap="xs">
-          {categories.map((cat) => (
+        <ScrollArea type="never">
+          <Group gap="xs" wrap="nowrap">
+            {categories.map((cat) => (
             <Button
               key={cat}
               variant={activeCategory === cat ? 'filled' : 'outline'}
@@ -69,6 +70,7 @@ export default function Events() {
             </Button>
           ))}
         </Group>
+      </ScrollArea>
 
         {loading ? (
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">

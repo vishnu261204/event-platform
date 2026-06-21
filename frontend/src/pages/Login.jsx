@@ -174,8 +174,8 @@ export default function Login() {
         </Container>
       </div>
 
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+      <div className="hidden lg:flex" style={{
+        flex: 1, flexDirection: 'column', justifyContent: 'center',
         padding: 80, background: isDark ? '#0f0f1a' : 'white',
       }}>
         <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
@@ -210,8 +210,6 @@ export default function Login() {
               </motion.div>
             ))}
           </Stack>
-
-
         </motion.div>
       </div>
     </div>

@@ -11,7 +11,7 @@ const pageVariants = {
 };
 
 export default function DashboardLayout() {
-  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
+  const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
   const location = useLocation();
 
@@ -37,7 +37,7 @@ export default function DashboardLayout() {
       </AppShell.Header>
 
       <AppShell.Navbar p="xs">
-        <SidebarNav />
+        <SidebarNav onNavigate={closeMobile} />
       </AppShell.Navbar>
 
       <AppShell.Main bg="var(--mantine-color-gray-0)">

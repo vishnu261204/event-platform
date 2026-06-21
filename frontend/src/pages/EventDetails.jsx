@@ -110,7 +110,7 @@ export default function EventDetails() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <Stack gap="lg">
               <Card padding={0} radius="md" withBorder style={{ overflow: 'hidden' }}>
-                <div style={{ position: 'relative', height: 320, overflow: 'hidden' }}>
+                <div className="relative h-64 lg:h-80 overflow-hidden">
                   {event.banner ? (
                     <img src={getImageUrl(event.banner)} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
@@ -163,7 +163,7 @@ export default function EventDetails() {
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, lg: 4 }}>
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} style={{ position: 'sticky', top: 80 }}>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:sticky lg:top-20">
             <Stack gap="md">
               <Card shadow="sm" padding="lg" radius="md" withBorder>
                 <Title order={3} mb="xs">Tickets</Title>

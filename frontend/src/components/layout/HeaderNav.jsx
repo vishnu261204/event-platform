@@ -106,15 +106,17 @@ export default function HeaderNav({ burger }) {
 
         {isAuthenticated ? (
           <>
-            <Tooltip label="Log out">
-              <ActionIcon variant="subtle" color="red" size="lg" onClick={handleLogout}>
-                <IconLogout size={20} />
-              </ActionIcon>
-            </Tooltip>
+            {!isMobile && (
+              <Tooltip label="Log out">
+                <ActionIcon variant="subtle" color="red" size="lg" onClick={handleLogout}>
+                  <IconLogout size={20} />
+                </ActionIcon>
+              </Tooltip>
+            )}
             <Menu shadow="md" width={200}>
               <Menu.Target>
-                <Button variant="subtle" px={6}>
-                  <Group gap="xs" wrap="nowrap">
+                <Button variant="subtle" px={4}>
+                  <Group gap={4} wrap="nowrap">
                     <Avatar color="indigo" radius="xl" size="sm">
                       {user?.name?.[0] || '?'}
                     </Avatar>
@@ -124,15 +126,9 @@ export default function HeaderNav({ burger }) {
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Label>Account</Menu.Label>
-                {user?.role === 'admin' || user?.role === 'organizer' ? (
-                  <Menu.Item leftSection={<IconLayoutDashboard size={16} />} onClick={() => navigate('/dashboard')}>
-                    Dashboard
-                  </Menu.Item>
-                ) : (
-                  <Menu.Item leftSection={<IconBook size={16} />} onClick={() => navigate('/my-bookings')}>
-                    My Bookings
-                  </Menu.Item>
-                )}
+                <Menu.Item leftSection={<IconLayoutDashboard size={16} />} onClick={() => navigate('/dashboard')}>
+                  Dashboard
+                </Menu.Item>
                 <Menu.Item leftSection={<IconUser size={16} />} onClick={() => navigate('/profile')}>
                   Profile
                 </Menu.Item>
@@ -144,9 +140,9 @@ export default function HeaderNav({ burger }) {
             </Menu>
           </>
         ) : (
-          <Group wrap="nowrap">
-            <Button variant="subtle" onClick={() => navigate('/login')}>Log in</Button>
-            <Button onClick={() => navigate('/register')}>Sign up</Button>
+          <Group gap={4} wrap="nowrap">
+            <Button variant="subtle" size="sm" px={8} onClick={() => navigate('/login')}>Log in</Button>
+            <Button size="sm" px={10} onClick={() => navigate('/register')}>Sign up</Button>
           </Group>
         )}
       </Group>

@@ -60,7 +60,7 @@ export default function BookingHistory() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           mb="lg"
-          style={{ maxWidth: 360 }}
+          w={{ base: '100%', sm: 360 }}
         />
 
         <Paper withBorder radius="md">

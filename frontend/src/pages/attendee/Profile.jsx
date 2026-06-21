@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Paper, Title, Text, Group, Stack, Card, Badge, Button, Tabs, Avatar, PasswordInput, TextInput, Skeleton } from '@mantine/core';
+import { Paper, Title, Text, Group, Stack, Card, Badge, Button, Tabs, Avatar, PasswordInput, TextInput, Skeleton, ScrollArea } from '@mantine/core';
 import { IconUser, IconMail, IconPhone, IconCalendar, IconLock } from '@tabler/icons-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatDate, getInitials } from '../../lib/utils';
@@ -44,7 +44,7 @@ export default function Profile() {
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 16px' }}>
           <Skeleton height={36} width={120} radius="md" mb="lg" />
           <Paper withBorder radius="md" p="xl" mb="lg">
-            <Group gap="lg" wrap="nowrap">
+            <Group gap="lg" wrap={{ base: 'wrap', sm: 'nowrap' }}>
               <Skeleton height={60} width={60} radius="xl" />
               <Stack gap={6}>
                 <Skeleton height={24} width={200} radius="sm" />
@@ -77,7 +77,7 @@ export default function Profile() {
         <Title order={2} mb="lg">Profile</Title>
 
         <Paper withBorder radius="md" p="xl" mb="lg">
-          <Group gap="lg" wrap="nowrap">
+          <Group gap="lg" wrap={{ base: 'wrap', sm: 'nowrap' }}>
             <Avatar color="blue" radius="xl" size="xl">
               {getInitials(user.name)}
             </Avatar>
@@ -99,10 +99,12 @@ export default function Profile() {
         </Paper>
 
         <Tabs value={activeTab} onChange={setActiveTab}>
-          <Tabs.List mb="md">
-            <Tabs.Tab value="details" leftSection={<IconUser size={16} />}>Profile Details</Tabs.Tab>
-            <Tabs.Tab value="settings" leftSection={<IconLock size={16} />}>Account Settings</Tabs.Tab>
-          </Tabs.List>
+          <ScrollArea type="never">
+            <Tabs.List mb="md">
+              <Tabs.Tab value="details" leftSection={<IconUser size={16} />}>Profile Details</Tabs.Tab>
+              <Tabs.Tab value="settings" leftSection={<IconLock size={16} />}>Account Settings</Tabs.Tab>
+            </Tabs.List>
+          </ScrollArea>
         </Tabs>
 
         {activeTab === 'details' && (

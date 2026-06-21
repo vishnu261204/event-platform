@@ -37,14 +37,14 @@ export default function Users() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <Group justify="space-between" mb="lg">
+      <Group justify="space-between" mb="lg" wrap="wrap">
         <Title order={2}>Manage Users</Title>
         <TextInput
           placeholder="Search users..."
           leftSection={<IconSearch size={16} />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          w={300}
+          w={{ base: '100%', sm: 300 }}
         />
       </Group>
 
@@ -109,7 +109,7 @@ export default function Users() {
         )}
       </Paper>
 
-      <Modal opened={!!viewUser} onClose={() => setViewUser(null)} title="User Details" centered>
+      <Modal opened={!!viewUser} onClose={() => setViewUser(null)} title="User Details" centered size="lg">
         {viewUser && (
           <Stack gap="sm">
             <Group><Text fw={500} w={100}>Name:</Text><Text>{viewUser.name}</Text></Group>

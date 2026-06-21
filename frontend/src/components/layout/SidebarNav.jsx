@@ -26,7 +26,7 @@ const configs = {
   },
 };
 
-export default function SidebarNav() {
+export default function SidebarNav({ onNavigate }) {
   const { user } = useSelector((s) => s.auth);
   const location = useLocation();
   const config = configs[user?.role];
@@ -55,6 +55,7 @@ export default function SidebarNav() {
               active={isActive}
               variant="light"
               style={{ borderRadius: 8 }}
+              onClick={onNavigate}
             />
           );
         })}

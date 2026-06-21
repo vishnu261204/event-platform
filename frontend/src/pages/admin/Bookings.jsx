@@ -27,14 +27,14 @@ export default function Bookings() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <Group justify="space-between" mb="lg">
+      <Group justify="space-between" mb="lg" wrap="wrap">
         <Title order={2}>Manage Bookings</Title>
         <TextInput
           placeholder="Search bookings..."
           leftSection={<IconSearch size={16} />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          w={300}
+          w={{ base: '100%', sm: 300 }}
         />
       </Group>
 
@@ -94,7 +94,7 @@ export default function Bookings() {
         )}
       </Paper>
 
-      <Modal opened={!!viewBooking} onClose={() => setViewBooking(null)} title="Booking Details" centered>
+      <Modal opened={!!viewBooking} onClose={() => setViewBooking(null)} title="Booking Details" centered size="lg">
         {viewBooking && (
           <Stack gap="sm">
             <Group><Text fw={500} w={140}>Booking ID:</Text><Text ff="mono">{viewBooking.bookingId || viewBooking._id.slice(-8).toUpperCase()}</Text></Group>
