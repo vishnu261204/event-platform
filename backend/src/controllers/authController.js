@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import emailService from '../services/emailService.js';
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -87,4 +88,60 @@ export const changePassword = asyncHandler(async (req, res) => {
   await user.save();
 
   ApiResponse.success(res, null, 'Password changed successfully');
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    ApiResponse.success(res, null, 'If the email exists, an OTP has been sent');
+    return;
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  user.passwordResetOtp = otp;
+  user.passwordResetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save();
+
+  await emailService.sendOtp(user.email, otp);
+
+  ApiResponse.success(res, null, 'OTP sent to your email');
+});
+
+export const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email }).select('+passwordResetOtp');
+  if (
+    !user ||
+    !user.passwordResetOtp ||
+    user.passwordResetOtp !== otp ||
+    new Date(user.passwordResetOtpExpires) < new Date()
+  ) {
+    throw ApiError.badRequest('Invalid or expired OTP');
+  }
+
+  ApiResponse.success(res, null, 'OTP verified');
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  const user = await User.findOne({ email }).select('+passwordResetOtp +password');
+  if (
+    !user ||
+    !user.passwordResetOtp ||
+    user.passwordResetOtp !== otp ||
+    new Date(user.passwordResetOtpExpires) < new Date()
+  ) {
+    throw ApiError.badRequest('Invalid or expired OTP');
+  }
+
+  user.password = password;
+  user.passwordResetOtp = null;
+  user.passwordResetOtpExpires = null;
+  await user.save();
+
+  ApiResponse.success(res, null, 'Password reset successfully');
 });

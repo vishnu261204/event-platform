@@ -145,7 +145,7 @@ export default function Login() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Checkbox label="Remember me" size="sm" />
-                      <Anchor component="button" size="sm" c="dimmed">Forgot password?</Anchor>
+                      <Anchor component={Link} to="/forgot-password" size="sm" c="dimmed">Forgot password?</Anchor>
                     </div>
 
                     <Button

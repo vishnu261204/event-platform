@@ -8,6 +8,7 @@ import Events from '../pages/Events';
 import EventDetails from '../pages/EventDetails';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
+import ForgotPassword from '../pages/ForgotPassword';
 import NotFound from '../pages/NotFound';
 
 import AdminDashboard from '../pages/admin/Dashboard';
@@ -40,6 +41,7 @@ export default function AppRoutes() {
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
         <Route path="/my-bookings" element={<AttendeeRoute><BookingHistory /></AttendeeRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

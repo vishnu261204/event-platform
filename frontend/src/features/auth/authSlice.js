@@ -81,6 +81,48 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async ({ email }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.forgotPassword({ email });
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to send OTP'
+      );
+    }
+  }
+);
+
+export const verifyOtp = createAsyncThunk(
+  'auth/verifyOtp',
+  async ({ email, otp }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.verifyOtp({ email, otp });
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Invalid or expired OTP'
+      );
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'auth/resetPassword',
+  async ({ email, otp, password, confirmPassword }, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.resetPassword({ email, otp, password, confirmPassword });
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to reset password'
+      );
+    }
+  }
+);
+
 let parsedUser = null;
 try {
   const raw = localStorage.getItem('user');
