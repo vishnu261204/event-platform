@@ -104,7 +104,10 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   user.passwordResetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
   await user.save();
 
-  await emailService.sendOtp(user.email, otp);
+  const sent = await emailService.sendOtp(user.email, otp);
+  if (!sent) {
+    throw ApiError.internal('Failed to send OTP, please try again');
+  }
 
   ApiResponse.success(res, null, 'OTP sent to your email');
 });
