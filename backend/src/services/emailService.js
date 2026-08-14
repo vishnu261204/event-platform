@@ -1,5 +1,10 @@
 import nodemailer from 'nodemailer';
 
+const SMTP_CONNECTION_TIMEOUT = 10000;
+const SMTP_GREETING_TIMEOUT = 10000;
+const SMTP_SOCKET_TIMEOUT = 15000;
+const EMAIL_SEND_TIMEOUT = 12000;
+
 class EmailService {
   constructor() {
     this.transporter = null;
@@ -16,6 +21,9 @@ class EmailService {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      connectionTimeout: SMTP_CONNECTION_TIMEOUT,
+      greetingTimeout: SMTP_GREETING_TIMEOUT,
+      socketTimeout: SMTP_SOCKET_TIMEOUT,
     });
 
     return this.transporter;
@@ -33,16 +41,30 @@ class EmailService {
     }
 
     try {
-      await this.getTransporter().sendMail({
-        from: process.env.EMAIL_FROM || process.env.SMTP_USER,
-        to,
-        subject,
-        html,
+      let timer;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error('Email send timed out')),
+          EMAIL_SEND_TIMEOUT
+        );
       });
+
+      try {
+        const sendMailPromise = this.getTransporter().sendMail({
+          from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+          to,
+          subject,
+          html,
+        });
+        sendMailPromise.catch(() => {});
+        await Promise.race([sendMailPromise, timeout]);
+      } finally {
+        clearTimeout(timer);
+      }
       return true;
     } catch (error) {
       console.error('[EMAIL ERROR]', error.message);
-      throw error;
+      return false;
     }
   }
 
