@@ -126,9 +126,11 @@ export default function HeaderNav({ burger }) {
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Label>Account</Menu.Label>
-                <Menu.Item leftSection={<IconLayoutDashboard size={16} />} onClick={() => navigate('/dashboard')}>
-                  Dashboard
-                </Menu.Item>
+                {isOrgAdmin && (
+                  <Menu.Item leftSection={<IconLayoutDashboard size={16} />} onClick={() => navigate('/dashboard')}>
+                    Dashboard
+                  </Menu.Item>
+                )}
                 <Menu.Item leftSection={<IconUser size={16} />} onClick={() => navigate('/profile')}>
                   Profile
                 </Menu.Item>

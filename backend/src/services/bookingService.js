@@ -23,6 +23,10 @@ class BookingService {
       throw ApiError.badRequest('Event is not active');
     }
 
+    if (new Date(event.date).getTime() < Date.now()) {
+      throw ApiError.badRequest('This event has already ended');
+    }
+
     if (event.organizerId.toString() === userId.toString()) {
       throw ApiError.badRequest('Cannot book your own event');
     }

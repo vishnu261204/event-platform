@@ -27,6 +27,9 @@ export const createEventValidation = [
   body('totalSeats')
     .notEmpty().withMessage('Total seats is required')
     .isInt({ min: 1 }).withMessage('Total seats must be at least 1'),
+  body('status')
+    .optional()
+    .isIn(['active', 'draft']).withMessage('Status must be active or draft'),
 ];
 
 export const updateEventValidation = [
@@ -56,4 +59,7 @@ export const updateEventValidation = [
   body('totalSeats')
     .optional()
     .isInt({ min: 1 }).withMessage('Total seats must be at least 1'),
+  body('status')
+    .optional()
+    .isIn(['active', 'draft']).withMessage('Status must be active or draft'),
 ];

@@ -73,7 +73,7 @@ export default function PaymentModal({ opened, onClose, event, quantity }) {
               <Group grow mt="sm">
                 <Button variant="default" onClick={reset} disabled={submitting}>Cancel</Button>
                 <Button onClick={handleBook} loading={submitting}>
-                  {submitting ? 'Booking...' : `Confirm Booking — ${formatCurrency(total)}`}
+                  {submitting ? 'Booking...' : `Confirm Booking`}
                 </Button>
               </Group>
             </Stack>

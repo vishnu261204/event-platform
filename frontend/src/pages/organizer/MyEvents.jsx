@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Title, Text, Group, SimpleGrid, Card, Badge, Button, TextInput, Tabs, Stack, Skeleton } from '@mantine/core';
-import { IconSearch, IconEye, IconEdit, IconTrash, IconPlus, IconCalendarEvent, IconUsers, IconCurrencyRupee } from '@tabler/icons-react';
+import { IconSearch, IconEye, IconEdit, IconTrash, IconPlus, IconCalendarEvent, IconUsers } from '@tabler/icons-react';
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { eventAPI } from '../../services/api';
 import { notifications } from '@mantine/notifications';
@@ -127,7 +127,6 @@ export default function MyEvents() {
                         <Text size="sm">{ticketsSold} sold</Text>
                       </Group>
                       <Group gap={4}>
-                        <IconCurrencyRupee size={16} />
                         <Text size="sm" fw={600}>{formatCurrency(revenue)}</Text>
                       </Group>
                     </Group>

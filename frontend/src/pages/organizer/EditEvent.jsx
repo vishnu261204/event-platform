@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { Paper, Title, Text, TextInput, Textarea, Select, NumberInput, Button, Group, SimpleGrid, Image, ActionIcon, Box, Skeleton, Stack } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
-import { IconCurrencyDollar, IconUsers, IconPhoto, IconX } from '@tabler/icons-react';
+import { IconCurrencyDollar, IconUsers, IconPhoto, IconX, IconDeviceFloppy, IconSend } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { eventAPI } from '../../services/api';
 
@@ -40,6 +40,7 @@ export default function EditEvent() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [existingBanner, setExistingBanner] = useState(null);
+  const [eventStatus, setEventStatus] = useState('active');
 
   const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
@@ -49,6 +50,7 @@ export default function EditEvent() {
     eventAPI.getById(id)
       .then((res) => {
         const event = res.data.data.event;
+        setEventStatus(event.status || 'active');
         reset({
           title: event.title || '',
           description: event.description || '',
@@ -83,7 +85,7 @@ export default function EditEvent() {
     setExistingBanner(null);
   };
 
-  const onSubmit = async (formData) => {
+  const onSubmit = async (formData, status) => {
     try {
       const fd = new FormData();
       fd.append('title', formData.title);
@@ -94,10 +96,15 @@ export default function EditEvent() {
       fd.append('time', formData.time);
       fd.append('price', formData.price);
       fd.append('totalSeats', formData.totalSeats);
+      if (status) fd.append('status', status);
       if (file) fd.append('banner', file);
 
       await eventAPI.update(id, fd);
-      notifications.show({ title: 'Success', message: 'Event updated successfully!', color: 'green' });
+      notifications.show({
+        title: 'Success',
+        message: status === 'draft' ? 'Event saved as draft' : status === 'active' ? 'Event published!' : 'Event updated successfully!',
+        color: 'green',
+      });
       navigate('/organizer/events');
     } catch (err) {
       notifications.show({
@@ -144,7 +151,7 @@ export default function EditEvent() {
       <Title order={2} mb="lg">Edit Event</Title>
 
       <Paper withBorder shadow="sm" p="xl" radius="md" maw={720} mx="auto">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit((data) => onSubmit(data, eventStatus === 'draft' ? 'active' : undefined))}>
           <TextInput label="Event Title" placeholder="Enter event title" error={errors.title?.message} {...register('title')} mb="md" />
 
           <Textarea label="Description" placeholder="Describe your event..." error={errors.description?.message} {...register('description')} mb="md" rows={4} />
@@ -245,8 +252,17 @@ export default function EditEvent() {
           )}
 
           <Group pt="md" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
-            <Button type="submit" loading={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            <Button type="submit" leftSection={<IconSend size={16} />} loading={isSubmitting}>
+              {isSubmitting ? 'Saving...' : eventStatus === 'draft' ? 'Publish Event' : 'Save Changes'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              leftSection={<IconDeviceFloppy size={16} />}
+              disabled={isSubmitting}
+              onClick={() => handleSubmit((data) => onSubmit(data, 'draft'))()}
+            >
+              Save as Draft
             </Button>
             <Button variant="default" onClick={() => navigate('/organizer/events')}>Cancel</Button>
           </Group>

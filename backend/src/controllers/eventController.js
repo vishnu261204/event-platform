@@ -18,8 +18,31 @@ function getPublicId(url) {
   return parts.slice(uploadIdx + 2).join('/').replace(/\.[^.]+$/, '');
 }
 
+function getEventEndTime(event) {
+  const d = new Date(event.date);
+  if (event.time && typeof event.time === 'string') {
+    const [h, m] = event.time.split(':').map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(m)) {
+      d.setHours(h, m || 0, 0, 0);
+    }
+  }
+  return d;
+}
+
+function getEffectiveStatus(event) {
+  if (event.status === 'cancelled') return 'cancelled';
+  if (event.status === 'draft') return 'draft';
+  if (event.date && getEventEndTime(event).getTime() < Date.now()) return 'completed';
+  return event.status;
+}
+
+function withEffectiveStatus(event) {
+  const doc = event.toObject ? event.toObject() : event;
+  return { ...doc, status: getEffectiveStatus(event) };
+}
+
 export const createEvent = asyncHandler(async (req, res) => {
-  const { title, description, category, venue, date, time, price, totalSeats } = req.body;
+  const { title, description, category, venue, date, time, price, totalSeats, status } = req.body;
 
   const event = await Event.create({
     title,
@@ -32,6 +55,7 @@ export const createEvent = asyncHandler(async (req, res) => {
     totalSeats,
     organizerId: req.user._id,
     banner: getBannerUrl(req),
+    status: status === 'draft' ? 'draft' : 'active',
   });
 
   ApiResponse.created(res, { event }, 'Event created');
@@ -98,7 +122,7 @@ export const deleteEvent = asyncHandler(async (req, res) => {
 
 export const getMyEvents = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizerId: req.user._id }).sort({ createdAt: -1 });
-  ApiResponse.success(res, { events });
+  ApiResponse.success(res, { events: events.map(withEffectiveStatus) });
 });
 
 export const getAllEvents = asyncHandler(async (req, res) => {
@@ -115,6 +139,7 @@ export const getAllEvents = asyncHandler(async (req, res) => {
   }
 
   query.status = status || 'active';
+  query.date = { $gte: new Date(new Date().setHours(0, 0, 0, 0)) };
 
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const events = await Event.find(query)

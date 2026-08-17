@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { Paper, Title, Text, TextInput, Textarea, Select, NumberInput, Button, Group, SimpleGrid, Image, ActionIcon, Box } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
-import { IconCurrencyDollar, IconUsers, IconPlus, IconPhoto, IconX } from '@tabler/icons-react';
+import { IconCurrencyDollar, IconUsers, IconPhoto, IconX, IconDeviceFloppy, IconSend } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { eventAPI } from '../../services/api';
 
@@ -56,7 +56,7 @@ export default function CreateEvent() {
     setPreview(null);
   };
 
-  const onSubmit = async (formData) => {
+  const onSubmit = async (formData, status = 'active') => {
     try {
       const fd = new FormData();
       fd.append('title', formData.title);
@@ -67,10 +67,15 @@ export default function CreateEvent() {
       fd.append('time', formData.time);
       fd.append('price', formData.price);
       fd.append('totalSeats', formData.totalSeats);
+      fd.append('status', status);
       if (file) fd.append('banner', file);
 
       await eventAPI.create(fd);
-      notifications.show({ title: 'Success', message: 'Event created successfully!', color: 'green' });
+      notifications.show({
+        title: 'Success',
+        message: status === 'draft' ? 'Event saved as draft' : 'Event created and published!',
+        color: 'green',
+      });
       navigate('/organizer/events');
     } catch (err) {
       notifications.show({
@@ -187,8 +192,17 @@ export default function CreateEvent() {
           )}
 
           <Group pt="md" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
-            <Button type="submit" leftSection={<IconPlus size={16} />} loading={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Event'}
+            <Button type="submit" leftSection={<IconSend size={16} />} loading={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create & Publish'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              leftSection={<IconDeviceFloppy size={16} />}
+              disabled={isSubmitting}
+              onClick={() => handleSubmit((data) => onSubmit(data, 'draft'))()}
+            >
+              Save as Draft
             </Button>
             <Button variant="default" onClick={() => navigate('/organizer/events')}>Cancel</Button>
           </Group>

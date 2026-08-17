@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Card, Title, Text, Group, Table, Badge, TextInput, Tabs, Paper, ScrollArea, Skeleton, Stack, Divider } from '@mantine/core';
+import { Box, Card, Title, Text, Badge, Table, Group, ScrollArea, TextInput, Paper, Skeleton, Stack, Divider } from '@mantine/core';
 import { IconSearch, IconTicket } from '@tabler/icons-react';
 import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { eventAPI, bookingAPI } from '../../services/api';
