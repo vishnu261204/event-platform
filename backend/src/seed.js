@@ -12,6 +12,27 @@ import Event from './models/Event.js';
 import Booking from './models/Booking.js';
 import Counter from './models/Counter.js';
 import connectDB from './config/database.js';
+import cloudinary from './config/cloudinary.js';
+
+const uploadToCloudinary = async (sourceUrl, publicId) => {
+  try {
+    if (!process.env.CLOUDINARY_CLOUD_NAME) {
+      console.log(`[Cloudinary disabled] Using source URL for ${publicId}`);
+      return sourceUrl;
+    }
+    console.log(`Uploading image [${publicId}] to Cloudinary folder event-management/events...`);
+    const res = await cloudinary.uploader.upload(sourceUrl, {
+      folder: 'event-management/events',
+      public_id: publicId,
+      overwrite: true,
+    });
+    console.log(`✓ Cloudinary Upload Success: ${res.secure_url}`);
+    return res.secure_url;
+  } catch (err) {
+    console.warn(`[Cloudinary warning] ${publicId} upload error:`, err);
+    return sourceUrl;
+  }
+};
 
 const seed = async () => {
   await connectDB();
@@ -73,7 +94,17 @@ const seed = async () => {
     isActive: true,
   });
 
-  console.log('Seeding Events according to Event Schema...');
+  console.log('\nProcessing event images through Cloudinary...');
+  const reactSummitBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800', 'react-summit-2026');
+  const jazzNightBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800', 'jazz-night-2026');
+  const startupPitchBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800', 'startup-pitch-2026');
+  const yogaRetreatBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800', 'yoga-retreat-2026');
+  const aiWorkshopBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800', 'ai-workshop-2026');
+  const foodFestBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800', 'food-fest-2026');
+  const filmFestBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800', 'film-fest-2026');
+  const marathonBanner = await uploadToCloudinary('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800', 'marathon-2026');
+
+  console.log('\nSeeding Events according to Event Schema...');
   const events = await Event.create([
     {
       title: 'React Summit 2026',
@@ -85,7 +116,7 @@ const seed = async () => {
       price: 299,
       totalSeats: 500,
       availableSeats: 497,
-      banner: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+      banner: reactSummitBanner,
       organizerId: organizer1._id,
       status: 'active',
     },
@@ -99,7 +130,7 @@ const seed = async () => {
       price: 75,
       totalSeats: 300,
       availableSeats: 298,
-      banner: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800',
+      banner: jazzNightBanner,
       organizerId: organizer1._id,
       status: 'active',
     },
@@ -113,7 +144,7 @@ const seed = async () => {
       price: 0,
       totalSeats: 200,
       availableSeats: 198,
-      banner: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800',
+      banner: startupPitchBanner,
       organizerId: organizer2._id,
       status: 'active',
     },
@@ -127,7 +158,7 @@ const seed = async () => {
       price: 499,
       totalSeats: 100,
       availableSeats: 98,
-      banner: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800',
+      banner: yogaRetreatBanner,
       organizerId: organizer2._id,
       status: 'active',
     },
@@ -141,7 +172,7 @@ const seed = async () => {
       price: 199,
       totalSeats: 150,
       availableSeats: 150,
-      banner: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800',
+      banner: aiWorkshopBanner,
       organizerId: organizer2._id,
       status: 'active',
     },
@@ -155,7 +186,7 @@ const seed = async () => {
       price: 25,
       totalSeats: 1000,
       availableSeats: 998,
-      banner: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
+      banner: foodFestBanner,
       organizerId: organizer2._id,
       status: 'active',
     },
@@ -169,7 +200,7 @@ const seed = async () => {
       price: 120,
       totalSeats: 250,
       availableSeats: 250,
-      banner: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800',
+      banner: filmFestBanner,
       organizerId: organizer1._id,
       status: 'active',
     },
@@ -183,7 +214,7 @@ const seed = async () => {
       price: 50,
       totalSeats: 800,
       availableSeats: 800,
-      banner: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800',
+      banner: marathonBanner,
       organizerId: organizer1._id,
       status: 'active',
     },
@@ -245,7 +276,7 @@ const seed = async () => {
   });
 
   console.log('\n======================================================');
-  console.log('Database seeded successfully based on DB Schema!');
+  console.log('Database seeded successfully with Cloudinary images!');
   console.log('======================================================');
   console.log('Admin User:      admin@example.com / password123');
   console.log('Organizer 1:     organizer@example.com / password123');
