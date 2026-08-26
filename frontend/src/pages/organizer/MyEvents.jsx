@@ -126,9 +126,12 @@ export default function MyEvents() {
                         <IconUsers size={16} />
                         <Text size="sm">{ticketsSold} sold</Text>
                       </Group>
-                      <Group gap={4}>
-                        <Text size="sm" fw={600}>{formatCurrency(revenue)}</Text>
-                      </Group>
+                      <Stack gap={0} align="flex-end">
+                        <Text size="sm" fw={600} c="blue">{formatCurrency(event.price)}</Text>
+                        {ticketsSold > 0 && (
+                          <Text size="xs" c="dimmed">Rev: {formatCurrency(revenue)}</Text>
+                        )}
+                      </Stack>
                     </Group>
                   </Card>
                 </motion.div>
