@@ -9,6 +9,7 @@ import { DateInput } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
 import { IconCurrencyDollar, IconUsers, IconPhoto, IconX, IconDeviceFloppy, IconSend } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { getImageUrl } from '../../lib/utils';
 import { eventAPI } from '../../services/api';
 
 const schema = z.object({
@@ -143,8 +144,7 @@ export default function EditEvent() {
     );
   }
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  const bannerUrl = existingBanner ? `${API_URL.replace('/api', '')}${existingBanner}` : null;
+  const bannerUrl = getImageUrl(existingBanner);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
