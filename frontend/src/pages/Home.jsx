@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
+import { getImageUrl } from '../lib/utils';
 import { eventAPI } from '../services/api';
 
 const fadeUp = {
@@ -157,12 +158,17 @@ export default function Home() {
             {events.map((event, i) => (
               <motion.div key={event._id} {...stagger} transition={{ ...stagger.transition, delay: i * 0.1 }}>
                 <Card radius="lg" padding={0} withBorder style={{ overflow: 'hidden' }} shadow="md">
-                  <Box h={200} style={{ background: gradients[i % gradients.length], position: 'relative' }}>
+                  <Box h={200} style={{ position: 'relative', overflow: 'hidden' }}>
+                    {event.banner ? (
+                      <img src={getImageUrl(event.banner)} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <Box style={{ width: '100%', height: '100%', background: gradients[i % gradients.length] }} />
+                    )}
                     <Badge
                       size="lg"
                       variant="filled"
                       color="white"
-                      style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)' }}
+                      style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }}
                     >
                       {dayjs(event.date).isValid() ? dayjs(event.date).format('MMM D, YYYY') : event.date}
                     </Badge>
@@ -170,7 +176,7 @@ export default function Home() {
                       size="sm"
                       variant="filled"
                       color="white"
-                      style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)' }}
+                      style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }}
                     >
                       {event.category}
                     </Badge>

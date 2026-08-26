@@ -9,7 +9,8 @@ const API_BASE_URL = API_URL.replace('/api', '');
 export function getImageUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  return `${API_BASE_URL}${path}`;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${cleanPath}`;
 }
 
 export function formatDate(date, format = 'MMM D, YYYY') {
