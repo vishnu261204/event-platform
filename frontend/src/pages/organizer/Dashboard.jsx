@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Box, Paper, Title, Text, Group, SimpleGrid, Card, Badge, Table, ScrollArea, ThemeIcon, Skeleton, Stack, Divider, Select } from '@mantine/core';
-import { IconCalendarEvent, IconTicket } from '@tabler/icons-react';
-import { formatDate, getStatusColor, getStatusLabel } from '../../lib/utils';
+import { Box, Paper, Title, Text, Group, SimpleGrid, Card, Badge, Table, ScrollArea, ThemeIcon, Skeleton, Stack, Divider, Select, Modal, Button, ActionIcon, Tooltip } from '@mantine/core';
+import { IconCalendarEvent, IconTicket, IconEye } from '@tabler/icons-react';
+import { formatDate, formatCurrency, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { eventAPI, bookingAPI } from '../../services/api';
 
 export default function Dashboard() {
   const [events, setEvents] = useState([]);
   const [bookingsByEvent, setBookingsByEvent] = useState({});
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [viewBooking, setViewBooking] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -183,6 +184,7 @@ export default function Dashboard() {
                         <Table.Th>Customer</Table.Th>
                         <Table.Th>Tickets</Table.Th>
                         <Table.Th>Status</Table.Th>
+                        <Table.Th>Actions</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -190,6 +192,7 @@ export default function Dashboard() {
                         <Table.Tr key={b._id}>
                           <Table.Td>
                             <Text size="sm" fw={500}>{b.userId?.name || 'N/A'}</Text>
+                            <Text size="xs" c="dimmed">{b.userId?.email || 'N/A'}</Text>
                           </Table.Td>
                           <Table.Td>
                             <Text size="sm">{b.quantity}</Text>
@@ -198,6 +201,13 @@ export default function Dashboard() {
                             <Badge color={getStatusColor(b.bookingStatus)} variant="light" size="sm">
                               {getStatusLabel(b.bookingStatus)}
                             </Badge>
+                          </Table.Td>
+                          <Table.Td>
+                            <Tooltip label="View attendee & booking details">
+                              <ActionIcon variant="subtle" color="blue" onClick={() => setViewBooking(b)}>
+                                <IconEye size={18} />
+                              </ActionIcon>
+                            </Tooltip>
                           </Table.Td>
                         </Table.Tr>
                       ))}
@@ -215,7 +225,13 @@ export default function Dashboard() {
                           {getStatusLabel(b.bookingStatus)}
                         </Badge>
                       </Group>
-                      <Text size="xs" c="dimmed">{b.quantity} ticket(s)</Text>
+                      <Text size="xs" c="dimmed">{b.userId?.email || 'N/A'}</Text>
+                      <Group justify="space-between" mt={4}>
+                        <Text size="xs" c="dimmed">{b.quantity} ticket(s)</Text>
+                        <Button size="xs" variant="light" leftSection={<IconEye size={14} />} onClick={() => setViewBooking(b)}>
+                          View Details
+                        </Button>
+                      </Group>
                     </Card>
                   ))}
                 </Stack>
@@ -224,6 +240,25 @@ export default function Dashboard() {
           )}
         </Card>
       </SimpleGrid>
+
+      <Modal opened={!!viewBooking} onClose={() => setViewBooking(null)} title="Attendee & Booking Details" centered size="lg">
+        {viewBooking && (
+          <Stack gap="sm">
+            <Group><Text fw={500} w={150}>Booking ID:</Text><Text ff="mono" fw={600}>{viewBooking.bookingId || viewBooking._id.slice(-8).toUpperCase()}</Text></Group>
+            <Group><Text fw={500} w={150}>Event Name:</Text><Text fw={600}>{selectedEvent?.title || viewBooking.eventId?.title || 'N/A'}</Text></Group>
+            <Divider my="xs" />
+            <Group><Text fw={500} w={150}>Attendee Name:</Text><Text>{viewBooking.userId?.name || 'N/A'}</Text></Group>
+            <Group><Text fw={500} w={150}>Attendee Email:</Text><Text>{viewBooking.userId?.email || 'N/A'}</Text></Group>
+            <Divider my="xs" />
+            <Group><Text fw={500} w={150}>Ticket Quantity:</Text><Text>{viewBooking.quantity} ticket(s)</Text></Group>
+            <Group><Text fw={500} w={150}>Price Per Ticket:</Text><Text>{formatCurrency(selectedEvent?.price || viewBooking.eventId?.price || 0)}</Text></Group>
+            <Group><Text fw={500} w={150}>Total Amount:</Text><Text fw={700} c="blue" size="lg">{formatCurrency(viewBooking.totalAmount || (selectedEvent?.price || 0) * viewBooking.quantity)}</Text></Group>
+            <Group><Text fw={500} w={150}>Booking Date:</Text><Text>{formatDate(viewBooking.createdAt)}</Text></Group>
+            <Group><Text fw={500} w={150}>Status:</Text><Badge color={getStatusColor(viewBooking.bookingStatus)}>{getStatusLabel(viewBooking.bookingStatus)}</Badge></Group>
+            <Button fullWidth mt="md" variant="default" onClick={() => setViewBooking(null)}>Close</Button>
+          </Stack>
+        )}
+      </Modal>
     </motion.div>
   );
 }

@@ -63,7 +63,7 @@ export default function CreateEvent() {
       fd.append('description', formData.description);
       fd.append('category', formData.category);
       fd.append('venue', formData.venue);
-      fd.append('date', formData.date.toISOString());
+      fd.append('date', formData.date instanceof Date ? formData.date.toISOString() : new Date(formData.date).toISOString());
       fd.append('time', formData.time);
       fd.append('price', formData.price);
       fd.append('totalSeats', formData.totalSeats);

@@ -8,6 +8,9 @@ import asyncHandler from '../utils/asyncHandler.js';
 export const toggleUserStatus = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) throw ApiError.notFound('User not found');
+  if (user._id.toString() === req.user._id.toString()) {
+    throw ApiError.badRequest('Admin cannot deactivate own account');
+  }
   user.isActive = !user.isActive;
   await user.save();
   ApiResponse.success(res, { user }, `User ${user.isActive ? 'activated' : 'deactivated'}`);

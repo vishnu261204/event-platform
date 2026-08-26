@@ -58,6 +58,7 @@ export default function AppRoutes() {
         <Route path="/organizer/dashboard" element={<OrgDashboard />} />
         <Route path="/organizer/events" element={<OrgEvents />} />
         <Route path="/organizer/events/create" element={<CreateEvent />} />
+        <Route path="/organizer/events/:id" element={<EventDetails />} />
         <Route path="/organizer/events/:id/edit" element={<EditEvent />} />
       </Route>
 

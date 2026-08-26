@@ -75,7 +75,7 @@ eventSchema.index({ organizerId: 1 });
 eventSchema.index({ category: 1 });
 
 eventSchema.pre('save', function (next) {
-  if (this.isNew) {
+  if (this.isNew && (this.availableSeats === undefined || this.availableSeats === null)) {
     this.availableSeats = this.totalSeats;
   }
   next();

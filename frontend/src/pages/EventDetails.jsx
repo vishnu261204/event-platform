@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Container, Title, Text, Card, Badge, Button, Grid, SimpleGrid, Group, Stack, Divider, Breadcrumbs, Anchor, ActionIcon, Skeleton } from '@mantine/core'
 import { formatCurrency, getImageUrl } from '../lib/utils'
-import { IconCalendar, IconMapPin, IconClock, IconUsers, IconHeart, IconShare, IconMinus, IconPlus } from '@tabler/icons-react'
+import { IconCalendar, IconMapPin, IconClock, IconUsers, IconHeart, IconShare, IconMinus, IconPlus, IconArrowLeft } from '@tabler/icons-react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
@@ -84,7 +84,7 @@ export default function EventDetails() {
       <Container size="xl" py="xl">
         <Stack align="center" py="xl">
           <Title order={2}>Event Not Found</Title>
-          <Button onClick={() => navigate('/events')}>Back to Events</Button>
+          <Button leftSection={<IconArrowLeft size={16} />} onClick={() => navigate(-1)}>Back</Button>
         </Stack>
       </Container>
     )
@@ -97,13 +97,18 @@ export default function EventDetails() {
 
   return (
     <Container size="xl" py="lg">
-      <Breadcrumbs mb="lg">
-        {[{ title: 'Events', href: '/' }, { title: event.title, href: '#' }].map((item, index) =>
-          index < 1
-            ? <Anchor component={Link} to={item.href} key={item.title}>{item.title}</Anchor>
-            : <Text key={item.title}>{event.title}</Text>
-        )}
-      </Breadcrumbs>
+      <Group justify="space-between" align="center" mb="md">
+        <Button leftSection={<IconArrowLeft size={16} />} variant="subtle" size="sm" onClick={() => navigate(-1)}>
+          Back
+        </Button>
+        <Breadcrumbs>
+          {[{ title: 'Events', href: '/' }, { title: event.title, href: '#' }].map((item, index) =>
+            index < 1
+              ? <Anchor component={Link} to={item.href} key={item.title}>{item.title}</Anchor>
+              : <Text key={item.title}>{event.title}</Text>
+          )}
+        </Breadcrumbs>
+      </Group>
 
       <Grid gutter="lg">
         <Grid.Col span={{ base: 12, lg: 8 }}>
