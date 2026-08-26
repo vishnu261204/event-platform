@@ -23,8 +23,8 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      fontSrc: ["'self'", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       connectSrc: ["'self'"],
     },
   },
@@ -45,11 +45,27 @@ app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use(express.static(path.join(__dirname, '../public')));
+import fs from 'fs';
+
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+const publicDir = path.join(__dirname, '../public');
+
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+}
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+}
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  if (fs.existsSync(path.join(frontendDist, 'index.html'))) {
+    return res.sendFile(path.join(frontendDist, 'index.html'));
+  }
+  if (fs.existsSync(path.join(publicDir, 'index.html'))) {
+    return res.sendFile(path.join(publicDir, 'index.html'));
+  }
+  next();
 });
 
 app.use((req, res) => {

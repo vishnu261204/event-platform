@@ -66,12 +66,13 @@ export default function HeaderNav({ burger }) {
         {!isMobile && (
           <Group gap={4} ml="md">
             {publicLinks.map((link) => {
-              const active = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to));
+              const target = (user?.role === 'organizer' && link.to === '/') ? '/organizer/events' : link.to;
+              const active = location.pathname === target || (target !== '/' && location.pathname.startsWith(target));
               return (
                 <Button
                   key={link.to}
                   component={Link}
-                  to={link.to}
+                  to={target}
                   variant={active ? 'light' : 'subtle'}
                   color={active ? 'indigo' : 'gray'}
                   size="sm"
@@ -163,20 +164,23 @@ export default function HeaderNav({ burger }) {
         size="260"
       >
         <Stack gap={4}>
-          {publicLinks.map((link) => (
-            <Button
-              key={link.to}
-              component={Link}
-              to={link.to}
-              variant="subtle"
-              fullWidth
-              justify="flex-start"
-              onClick={closeMobileNav}
-              leftSection={<IconCalendarEvent size={18} />}
-            >
-              {link.label}
-            </Button>
-          ))}
+          {publicLinks.map((link) => {
+            const target = (user?.role === 'organizer' && link.to === '/') ? '/organizer/events' : link.to;
+            return (
+              <Button
+                key={link.to}
+                component={Link}
+                to={target}
+                variant="subtle"
+                fullWidth
+                justify="flex-start"
+                onClick={closeMobileNav}
+                leftSection={<IconCalendarEvent size={18} />}
+              >
+                {link.label}
+              </Button>
+            );
+          })}
           {isAttendee && attendeeLinks.map((link) => (
             <Button
               key={link.to}

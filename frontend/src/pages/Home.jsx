@@ -3,6 +3,7 @@ import { Container, Title, Text, Button, Card, Badge, Group, Stack, SimpleGrid, 
 import { IconTicket, IconCalendar, IconMapPin, IconSearch, IconArrowRight } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { eventAPI } from '../services/api';
 
@@ -37,15 +38,20 @@ const gradients = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    eventAPI.getAll({ limit: 6 })
+    const params = { limit: 6 };
+    if (user?.role === 'organizer' && user?._id) {
+      params.organizerId = user._id;
+    }
+    eventAPI.getAll(params)
       .then((res) => setEvents(res.data.data.events || []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?._id, user?.role]);
 
   return (
     <Box>

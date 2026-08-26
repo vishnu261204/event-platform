@@ -255,15 +255,6 @@ export default function EditEvent() {
             <Button type="submit" leftSection={<IconSend size={16} />} loading={isSubmitting}>
               {isSubmitting ? 'Saving...' : eventStatus === 'draft' ? 'Publish Event' : 'Save Changes'}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              leftSection={<IconDeviceFloppy size={16} />}
-              disabled={isSubmitting}
-              onClick={() => handleSubmit((data) => onSubmit(data, 'draft'))()}
-            >
-              Save as Draft
-            </Button>
             <Button variant="default" onClick={() => navigate('/organizer/events')}>Cancel</Button>
           </Group>
         </form>

@@ -126,7 +126,7 @@ export const getMyEvents = asyncHandler(async (req, res) => {
 });
 
 export const getAllEvents = asyncHandler(async (req, res) => {
-  const { search, category, status, page = 1, limit = 12 } = req.query;
+  const { search, category, status, page = 1, limit = 12, organizerId } = req.query;
 
   const query = {};
 
@@ -136,6 +136,12 @@ export const getAllEvents = asyncHandler(async (req, res) => {
 
   if (category) {
     query.category = category;
+  }
+
+  if (organizerId) {
+    query.organizerId = organizerId;
+  } else if (req.user && req.user.role === 'organizer') {
+    query.organizerId = req.user._id;
   }
 
   query.status = status || 'active';

@@ -22,7 +22,7 @@ export default function Bookings() {
   const filtered = bookings.filter((b) => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return b._id?.toLowerCase().includes(q) || b.eventId?.title?.toLowerCase().includes(q) || b.userId?.name?.toLowerCase().includes(q);
+    return b._id?.toLowerCase().includes(q) || b.bookingId?.toLowerCase().includes(q) || b.eventId?.title?.toLowerCase().includes(q) || b.userId?.name?.toLowerCase().includes(q);
   });
 
   return (

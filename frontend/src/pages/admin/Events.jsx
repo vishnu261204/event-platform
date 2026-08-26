@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Box, Button, Card, Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput, Skeleton, Stack, ActionIcon, Tooltip, Divider } from '@mantine/core';
+import { Box, Button, Card, Paper, Title, Text, Group, Table, ScrollArea, Badge, TextInput, Skeleton, Stack, ActionIcon, Tooltip, Divider, Tabs } from '@mantine/core';
 import { IconSearch, IconEye, IconTrash } from '@tabler/icons-react';
 import { formatDate, getStatusColor, getStatusLabel } from '../../lib/utils';
 import { adminAPI, eventAPI } from '../../services/api';
@@ -12,10 +12,11 @@ export default function Events() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('active');
 
   const fetchEvents = () => {
     setLoading(true);
-    adminAPI.getEvents()
+    adminAPI.getEvents({ includePast: 'true' })
       .then((res) => setEvents(res.data.data.events || []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
@@ -33,9 +34,20 @@ export default function Events() {
     }
   };
 
-  const filtered = events.filter((e) =>
-    !search || e.title?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = events.filter((e) => {
+    const match = !search || e.title?.toLowerCase().includes(search.toLowerCase());
+    if (activeTab === 'active') return match && e.status === 'active';
+    if (activeTab === 'completed') return match && e.status === 'completed';
+    if (activeTab === 'cancelled') return match && e.status === 'cancelled';
+    return match;
+  });
+
+  const counts = {
+    active: events.filter((e) => e.status === 'active').length,
+    completed: events.filter((e) => e.status === 'completed').length,
+    cancelled: events.filter((e) => e.status === 'cancelled').length,
+    all: events.length,
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -49,6 +61,15 @@ export default function Events() {
           w={{ base: '100%', sm: 300 }}
         />
       </Group>
+
+      <Tabs value={activeTab} onChange={setActiveTab} mb="md">
+        <Tabs.List>
+          <Tabs.Tab value="active">Active ({counts.active})</Tabs.Tab>
+          <Tabs.Tab value="completed">Completed ({counts.completed})</Tabs.Tab>
+          <Tabs.Tab value="cancelled">Cancelled ({counts.cancelled})</Tabs.Tab>
+          <Tabs.Tab value="all">All Events ({counts.all})</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
 
       <Paper p="lg" radius="md" withBorder>
         {loading ? (
