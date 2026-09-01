@@ -4,7 +4,6 @@ import { formatCurrency, getImageUrl } from '../lib/utils'
 import { IconSearch, IconCalendar, IconMapPin, IconX, IconTicket } from '@tabler/icons-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useSelector } from 'react-redux'
 import dayjs from 'dayjs'
 import { eventAPI } from '../services/api'
 
@@ -23,33 +22,29 @@ const itemVariants = {
 export default function Events() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { user } = useSelector((state) => state.auth)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(searchParams.get('q') || '')
   const [activeCategory, setActiveCategory] = useState('All')
-
-  const isOrganizer = user?.role === 'organizer'
 
   useEffect(() => {
     setLoading(true)
     const params = {}
     if (search) params.search = search
     if (activeCategory !== 'All') params.category = activeCategory
-    if (isOrganizer && user?._id) params.organizerId = user._id
     eventAPI.getAll(params)
       .then((res) => setEvents(res.data.data.events || []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false))
-  }, [search, activeCategory, isOrganizer, user?._id])
+  }, [search, activeCategory])
 
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <div>
-            <Title order={1}>{isOrganizer ? 'My Organized Events' : 'Discover Events'}</Title>
-            <Text c="dimmed">{isOrganizer ? 'Events created and managed by you' : 'Find and book the best events in your city'}</Text>
+            <Title order={1}>Discover Events</Title>
+            <Text c="dimmed">Find and book the best events in your city</Text>
           </div>
           <TextInput
             placeholder="Search events..."

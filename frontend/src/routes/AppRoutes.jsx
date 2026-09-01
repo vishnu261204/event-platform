@@ -29,15 +29,15 @@ export default function AppRoutes() {
 
   const DashboardRedirect = () => {
     if (!user) return <Navigate to="/login" />;
-    const routes = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/' };
-    return <Navigate to={routes[user.role] || '/'} />;
+    const routes = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/events' };
+    return <Navigate to={routes[user.role] || '/events'} />;
   };
 
   return (
     <Routes>
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<Events />} />
-        <Route path="/events" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Navigate to="/events" replace />} />
+        <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

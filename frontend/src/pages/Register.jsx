@@ -98,8 +98,8 @@ export default function Register() {
         color: 'green',
         autoClose: 4000,
       });
-      const redirects = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/' };
-      navigate(redirects[result.user?.role] || '/');
+      const redirects = { admin: '/admin/dashboard', organizer: '/organizer/dashboard', attendee: '/events' };
+      navigate(redirects[result.user?.role] || '/events');
     } catch (err) {
       notifications.show({
         title: 'Registration failed',

@@ -13,9 +13,9 @@ export default function ProtectedRoute({ children, roles }) {
     const redirectMap = {
       admin: '/admin/dashboard',
       organizer: '/organizer/dashboard',
-      attendee: '/',
+      attendee: '/events',
     };
-    return <Navigate to={redirectMap[user?.role] || '/'} replace />;
+    return <Navigate to={redirectMap[user?.role] || '/events'} replace />;
   }
 
   return children;

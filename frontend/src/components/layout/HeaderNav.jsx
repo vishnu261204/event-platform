@@ -12,7 +12,7 @@ import {
 import { logout } from '../../features/auth/authSlice';
 
 const publicLinks = [
-  { label: 'Events', to: '/' },
+  { label: 'Events', to: '/events' },
 ];
 
 const attendeeLinks = [
@@ -66,7 +66,7 @@ export default function HeaderNav({ burger }) {
         {!isMobile && (
           <Group gap={4} ml="md">
             {publicLinks.map((link) => {
-              const target = (user?.role === 'organizer' && link.to === '/') ? '/organizer/events' : link.to;
+              const target = link.to;
               const active = location.pathname === target || (target !== '/' && location.pathname.startsWith(target));
               return (
                 <Button
@@ -165,12 +165,11 @@ export default function HeaderNav({ burger }) {
       >
         <Stack gap={4}>
           {publicLinks.map((link) => {
-            const target = (user?.role === 'organizer' && link.to === '/') ? '/organizer/events' : link.to;
             return (
               <Button
                 key={link.to}
                 component={Link}
-                to={target}
+                to={link.to}
                 variant="subtle"
                 fullWidth
                 justify="flex-start"

@@ -140,8 +140,6 @@ export const getAllEvents = asyncHandler(async (req, res) => {
 
   if (organizerId) {
     query.organizerId = organizerId;
-  } else if (req.user && req.user.role === 'organizer') {
-    query.organizerId = req.user._id;
   }
 
   query.status = status || 'active';
